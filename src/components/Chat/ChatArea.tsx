@@ -1,18 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Lock, MessageSquare } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, Database } from '../../lib/supabase';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { encryptMessage, decryptMessage, importPublicKey } from '../../lib/crypto';
 import { useUIStore } from '../../stores/ui-store';
+
+type MessageRow = Database['public']['Tables']['messages']['Row'];
 
 export default function ChatArea() {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { activeContact, messages, setMessages, addMessage, setLoadingMessages, loadingMessages } = useChatStore();
-  const { user, privateKey } = useAuthStore();
+  const { activeContact, messages, setMessages, addMessage, setLoadingMessages, isLoadingMessages } = useChatStore();
+  const { user, publicKey, privateKey } = useAuthStore();
   const { setNotification } = useUIStore();
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export default function ChatArea() {
       const cleanup = subscribeToMessages();
       return cleanup;
     }
-  }, [activeContact, user]);
+  }, [activeContact, user, privateKey]);
 
   useEffect(() => {
     scrollToBottom();
@@ -52,14 +54,15 @@ export default function ChatArea() {
 
     const decryptedMessages = await Promise.all(
       (data || []).map(async (msg) => {
+        const isSender = msg.sender_id === user.id;
         try {
-          if (msg.recipient_id === user.id) {
-            const decrypted = await decryptMessage(msg.encrypted_content, privateKey);
-            return { ...msg, decrypted_content: decrypted };
-          }
-          return { ...msg, decrypted_content: '[Sent message]' };
-        } catch (error) {
-          return { ...msg, decrypted_content: '[Could not decrypt]' };
+          const decrypted = await decryptMessage(msg.encrypted_content, privateKey, isSender);
+          return { ...msg, decrypted_content: decrypted };
+        } catch {
+          return {
+            ...msg,
+            decrypted_content: isSender ? '[Sent message]' : '[Could not decrypt]',
+          };
         }
       })
     );
@@ -86,18 +89,20 @@ export default function ChatArea() {
         },
         async (payload) => {
           console.log('New message received:', payload);
-          if (payload.new.sender_id === activeContact.id) {
+          const newMessage = payload.new as MessageRow;
+          if (newMessage.sender_id === activeContact.id) {
             try {
               if (!privateKey) return;
               const decrypted = await decryptMessage(
-                payload.new.encrypted_content,
-                privateKey
+                newMessage.encrypted_content,
+                privateKey,
+                false
               );
-              addMessage({ ...payload.new, decrypted_content: decrypted });
+              addMessage({ ...newMessage, decrypted_content: decrypted });
             } catch (error) {
               console.error('Decryption error:', error);
               addMessage({
-                ...payload.new,
+                ...newMessage,
                 decrypted_content: '[Could not decrypt]',
               });
             }
@@ -116,13 +121,18 @@ export default function ChatArea() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !activeContact || !user) return;
+    if (!message.trim() || !activeContact || !user || !publicKey) return;
 
     setIsSending(true);
 
     try {
       const recipientPublicKey = await importPublicKey(activeContact.public_key);
-      const encryptedContent = await encryptMessage(message, recipientPublicKey);
+      const senderPublicKey = await importPublicKey(publicKey);
+      const encryptedContent = await encryptMessage(
+        message,
+        recipientPublicKey,
+        senderPublicKey
+      );
 
       const { data, error } = await supabase
         .from('messages')
@@ -136,9 +146,9 @@ export default function ChatArea() {
 
       if (error) throw error;
 
-      addMessage({ ...data, decrypted_content: '[Sent message]' });
+      addMessage({ ...data, decrypted_content: message });
       setMessage('');
-    } catch (error) {
+    } catch {
       setNotification({ message: 'Failed to send message', type: 'error' });
     } finally {
       setIsSending(false);
@@ -167,7 +177,7 @@ export default function ChatArea() {
   return (
     <div className="flex-1 flex flex-col bg-warm-50 dark:bg-slate-900">
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {loadingMessages ? (
+        {isLoadingMessages ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />

@@ -2,22 +2,22 @@ import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import { useAuthStore } from './stores/auth-store';
 import { getEncryptedPrivateKey } from './lib/storage';
-import { decryptPrivateKey, importPrivateKey } from './lib/crypto';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/Auth/LoginPage';
 import SignupPage from './components/Auth/SignupPage';
+import UnlockPage from './components/Auth/UnlockPage';
 import ChatLayout from './components/Chat/ChatLayout';
 import EncryptionInfoModal from './components/EncryptionInfoModal';
 import Notification from './components/Notification';
 
 function App() {
   const [authView, setAuthView] = useState<'landing' | 'login' | 'signup'>('landing');
-  const { user, setUser, setKeys, setLoading, isLoading } = useAuthStore();
+  const { user, privateKey, setUser, setKeys, setLoading, isLoading } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'SIGNED_OUT') {
         setUser(null);
         setKeys(null, null);
@@ -83,6 +83,12 @@ function App() {
         )}
       </>
     );
+  }
+
+  // Session restored (e.g. after a page refresh) but the private key only
+  // lives in memory: ask for the password to decrypt the stored key.
+  if (!privateKey) {
+    return <UnlockPage />;
   }
 
   return (

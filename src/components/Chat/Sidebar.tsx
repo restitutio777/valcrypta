@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Search, UserPlus } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, Database } from '../../lib/supabase';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
 import ValCryptaLogo from '../ValCryptaLogo';
 
+type UserRow = Database['public']['Tables']['users']['Row'];
+
 export default function Sidebar() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<UserRow[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   const { contacts, activeContact, setContacts, setActiveContact, addContact } = useChatStore();
@@ -76,7 +78,7 @@ export default function Sidebar() {
     }
   };
 
-  const handleAddContact = async (contact: any) => {
+  const handleAddContact = async (contact: UserRow) => {
     if (!user) return;
 
     const exists = contacts.find((c) => c.id === contact.id);

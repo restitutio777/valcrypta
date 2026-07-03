@@ -3,16 +3,18 @@ import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/auth-store';
 import { useChatStore } from '../../stores/chat-store';
 import { useUIStore } from '../../stores/ui-store';
-import { clearAllKeys } from '../../lib/storage';
 
 export default function TopBar() {
-  const { activeContact } = useChatStore();
+  const { activeContact, clearChat } = useChatStore();
   const { clearAuth } = useAuthStore();
   const { darkMode, toggleDarkMode, setShowEncryptionInfo } = useUIStore();
 
   const handleLogout = async () => {
+    // Deliberately keep the encrypted private key in IndexedDB: it is the
+    // only copy in existence and is already AES-GCM encrypted with the
+    // user's password. Deleting it would permanently brick the account.
     await supabase.auth.signOut();
-    await clearAllKeys();
+    clearChat();
     clearAuth();
   };
 

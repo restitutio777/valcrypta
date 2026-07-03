@@ -64,7 +64,7 @@ npm run dev
 
 ## Security Features
 
-- **End-to-End Encryption:** All messages are encrypted with RSA-OAEP 2048-bit encryption
+- **End-to-End Encryption:** Each message is encrypted with a fresh AES-GCM 256-bit key, wrapped with RSA-OAEP 2048-bit for recipient and sender
 - **Private Key Protection:** Your private key is encrypted with your password using AES-GCM 256-bit
 - **Client-Side Only:** Private keys never leave your device
 - **Row Level Security:** Database access is restricted at the PostgreSQL level

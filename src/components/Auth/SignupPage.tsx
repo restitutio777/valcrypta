@@ -74,12 +74,17 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       const encryptedPrivateKey = await encryptPrivateKey(privateKeyString, password);
       await storeEncryptedPrivateKey(authData.user.id, encryptedPrivateKey);
 
-      const { error: profileError } = await supabase.from('users').insert({
-        id: authData.user.id,
-        email,
-        username,
-        public_key: publicKeyString,
-      });
+      // Upsert instead of insert: the database has a trigger that creates a
+      // placeholder profile row on auth signup, so a plain insert collides.
+      const { error: profileError } = await supabase.from('users').upsert(
+        {
+          id: authData.user.id,
+          email,
+          username,
+          public_key: publicKeyString,
+        },
+        { onConflict: 'id' }
+      );
 
       if (profileError) {
         console.error('Profile creation error:', profileError);

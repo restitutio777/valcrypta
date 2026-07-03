@@ -55,7 +55,7 @@ export async function importPrivateKey(privateKeyString: string): Promise<Crypto
 
 export async function deriveKeyFromPassword(
   password: string,
-  salt: Uint8Array
+  salt: Uint8Array<ArrayBuffer>
 ): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const passwordKey = await crypto.subtle.importKey(
@@ -132,39 +132,109 @@ export async function decryptPrivateKey(
   return dec.decode(decrypted);
 }
 
+// Hybrid encryption (v2): the message is encrypted once with a random
+// AES-GCM key; that key is RSA-wrapped separately for the recipient (rk)
+// and the sender (sk), so both parties can read the history and message
+// length is not limited by the RSA modulus.
+interface HybridPayload {
+  v: 2;
+  iv: string;
+  ct: string;
+  rk: string;
+  sk: string;
+}
+
 export async function encryptMessage(
   message: string,
-  recipientPublicKey: CryptoKey
+  recipientPublicKey: CryptoKey,
+  senderPublicKey: CryptoKey
 ): Promise<string> {
   const enc = new TextEncoder();
-  const encoded = enc.encode(message);
+  const aesKey = await crypto.subtle.generateKey(
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt', 'decrypt']
+  );
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
 
-  const encrypted = await crypto.subtle.encrypt(
-    {
-      name: 'RSA-OAEP',
-    },
-    recipientPublicKey,
-    encoded
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    aesKey,
+    enc.encode(message)
   );
 
-  return arrayBufferToBase64(encrypted);
+  const rawAesKey = await crypto.subtle.exportKey('raw', aesKey);
+  const wrappedForRecipient = await crypto.subtle.encrypt(
+    { name: 'RSA-OAEP' },
+    recipientPublicKey,
+    rawAesKey
+  );
+  const wrappedForSender = await crypto.subtle.encrypt(
+    { name: 'RSA-OAEP' },
+    senderPublicKey,
+    rawAesKey
+  );
+
+  const payload: HybridPayload = {
+    v: 2,
+    iv: arrayBufferToBase64(iv.buffer),
+    ct: arrayBufferToBase64(ciphertext),
+    rk: arrayBufferToBase64(wrappedForRecipient),
+    sk: arrayBufferToBase64(wrappedForSender),
+  };
+
+  return JSON.stringify(payload);
 }
 
 export async function decryptMessage(
   encryptedMessage: string,
-  privateKey: CryptoKey
+  privateKey: CryptoKey,
+  isSender: boolean
 ): Promise<string> {
-  const encrypted = base64ToArrayBuffer(encryptedMessage);
+  const dec = new TextDecoder();
+
+  let payload: HybridPayload | null = null;
+  try {
+    const parsed = JSON.parse(encryptedMessage);
+    if (parsed && parsed.v === 2) payload = parsed as HybridPayload;
+  } catch {
+    // Not JSON: legacy v1 message (direct RSA), handled below.
+  }
+
+  if (payload) {
+    const wrappedKey = base64ToArrayBuffer(isSender ? payload.sk : payload.rk);
+    const rawAesKey = await crypto.subtle.decrypt(
+      { name: 'RSA-OAEP' },
+      privateKey,
+      wrappedKey
+    );
+    const aesKey = await crypto.subtle.importKey(
+      'raw',
+      rawAesKey,
+      { name: 'AES-GCM' },
+      false,
+      ['decrypt']
+    );
+    const plaintext = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: base64ToArrayBuffer(payload.iv) },
+      aesKey,
+      base64ToArrayBuffer(payload.ct)
+    );
+    return dec.decode(plaintext);
+  }
+
+  // Legacy v1: encrypted directly to the recipient's RSA key; the sender
+  // never had a readable copy.
+  if (isSender) {
+    throw new Error('Legacy sent message cannot be decrypted by sender');
+  }
 
   const decrypted = await crypto.subtle.decrypt(
-    {
-      name: 'RSA-OAEP',
-    },
+    { name: 'RSA-OAEP' },
     privateKey,
-    encrypted
+    base64ToArrayBuffer(encryptedMessage)
   );
 
-  const dec = new TextDecoder();
   return dec.decode(decrypted);
 }
 

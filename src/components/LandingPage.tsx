@@ -98,8 +98,8 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           <div className="text-center text-warm-500 dark:text-warm-400 text-sm">
             <p>© 2025 ValCrypta. Encrypted by you. Not stored for us.</p>
             <p className="mt-2">
-              <span className="font-medium">RSA-OAEP 2048-bit</span> message encryption ·
-              <span className="font-medium"> AES-GCM 256-bit</span> key protection
+              <span className="font-medium">AES-GCM 256-bit</span> message encryption ·
+              <span className="font-medium"> RSA-OAEP 2048-bit</span> key exchange
             </p>
           </div>
         </footer>

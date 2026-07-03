@@ -4,7 +4,7 @@ React 18 + TypeScript + Vite SPA, Supabase (Auth/Postgres/Realtime) backend, cli
 
 ## Where things live
 - Entry point: [src/main.tsx](src/main.tsx) -> [src/App.tsx](src/App.tsx) — top-level auth/session routing (landing/login/signup vs chat)
-- Crypto core: [src/lib/crypto.ts](src/lib/crypto.ts) — RSA-OAEP 2048 keypair gen, PBKDF2+AES-GCM private-key wrapping, message encrypt/decrypt
+- Crypto core: [src/lib/crypto.ts](src/lib/crypto.ts) — RSA-OAEP 2048 keypair gen, PBKDF2+AES-GCM private-key wrapping, hybrid message encryption (AES-GCM content key RSA-wrapped for recipient `rk` and sender `sk`; legacy v1 = RSA-direct)
 - Local key storage: [src/lib/storage.ts](src/lib/storage.ts) — IndexedDB wrapper for the encrypted private key blob
 - Supabase client + DB types: [src/lib/supabase.ts](src/lib/supabase.ts) — `users`/`messages`/`contacts` table types
 - State (Zustand): [src/stores/auth-store.ts](src/stores/auth-store.ts) (user/keys), [src/stores/chat-store.ts](src/stores/chat-store.ts) (messages/contacts), [src/stores/ui-store.ts](src/stores/ui-store.ts) (dark mode/sidebar/notifications, persisted)

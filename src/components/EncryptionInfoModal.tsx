@@ -109,10 +109,10 @@ export default function EncryptionInfoModal() {
               Technical Details
             </h4>
             <p className="text-sm text-warm-700 dark:text-warm-200">
-              ValCrypta uses RSA-OAEP 2048-bit encryption for message content and AES-GCM
-              256-bit encryption (derived using PBKDF2 with 100,000 iterations) for protecting
-              your private key. This is the same encryption standard used by major financial
-              institutions and government organizations.
+              ValCrypta encrypts each message with a fresh AES-GCM 256-bit key, which is
+              then wrapped with RSA-OAEP 2048-bit for both the recipient and the sender.
+              Your private key is protected with AES-GCM 256-bit encryption derived from
+              your password using PBKDF2 with 100,000 iterations.
             </p>
           </div>
         </div>
