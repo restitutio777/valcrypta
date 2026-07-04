@@ -12,7 +12,7 @@ export const landing = {
   kicker: 'Ende-zu-Ende-verschlüsselter Messenger',
   heroLine1: 'Nachrichten,',
   heroLine2Pre: 'die niemand ',
-  heroEmphasis: 'mitliest.', // Instrument Serif Italic
+  heroEmphasis: 'mitliest.', // set in display italic
   heroSub:
     'ValCrypta verschlüsselt jede Nachricht auf deinem Gerät. ' +
     'Der Server speichert nur Chiffretext.',

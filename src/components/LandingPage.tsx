@@ -89,11 +89,11 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
                 </span>
               </span>
 
-              <h1 className="mt-8 animate-fade-in-up font-display font-normal leading-[1.02] text-porcelain-900 dark:text-porcelain-100 [font-size:clamp(3rem,8.5vw,6rem)]">
+              <h1 className="mt-8 animate-fade-in-up font-display font-semibold leading-[0.98] tracking-[-0.035em] text-porcelain-900 dark:text-porcelain-100 [font-size:clamp(3rem,8.5vw,6rem)]">
                 {landing.heroLine1}
                 <br />
                 {landing.heroLine2Pre}
-                <em className="italic">{landing.heroEmphasis}</em>
+                <em className="font-medium italic">{landing.heroEmphasis}</em>
               </h1>
 
               <p
@@ -140,7 +140,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       {/* Wie ValCrypta funktioniert — typographic, numbered, no icons       */}
       {/* ---------------------------------------------------------------- */}
       <section className="container mx-auto max-w-3xl px-6 py-20 md:py-28">
-        <h2 className="font-display text-3xl font-normal text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+        <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
           {landing.how.title}
         </h2>
         <div className="mt-10">
@@ -151,7 +151,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
             >
               <span className="spec-label pt-2">{num}</span>
               <div>
-                <h3 className="font-display text-2xl font-normal text-porcelain-900 dark:text-porcelain-100 md:text-3xl">
+                <h3 className="font-display text-2xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-3xl">
                   {claim}
                 </h3>
                 <p className="mt-3 leading-relaxed text-porcelain-600 dark:text-porcelain-300">
@@ -168,7 +168,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       {/* ---------------------------------------------------------------- */}
       <section className="bg-mist-50 dark:bg-ink-900/60">
         <div className="container mx-auto max-w-4xl px-6 py-20 md:py-28">
-          <h2 className="text-center font-display text-3xl font-normal text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+          <h2 className="text-center font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
             {landing.storage.title}
           </h2>
           <div className="mt-12 grid gap-6 md:grid-cols-2">
@@ -208,7 +208,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       {/* ---------------------------------------------------------------- */}
       <section className="aurora-bg">
         <div className="container mx-auto px-6 py-24 text-center md:py-32">
-          <p className="mx-auto max-w-2xl font-display text-3xl font-normal italic leading-snug text-porcelain-900 dark:text-porcelain-100 md:text-5xl">
+          <p className="mx-auto max-w-2xl font-display text-3xl font-medium italic leading-snug tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-5xl">
             {landing.finalCta.line}
           </p>
           <button

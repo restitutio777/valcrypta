@@ -18,9 +18,8 @@
     @apply bg-ink-950 text-porcelain-100;
   }
 
-  /* Headings stay grotesk by default; the serif display voice is opt-in via
-     font-display and must never be combined with bold (Instrument Serif ships
-     weight 400 only — bold would render as faux-bold). */
+  /* Headings default to the UI grotesk; the display voice (Instrument Sans,
+     variable 400–600) is opt-in via font-display on the landing page. */
   h1,
   h2,
   h3 {
@@ -240,7 +239,7 @@
 
   /* Mono spec label — core identity element (cryptographic credibility). */
   .spec-label {
-    @apply font-mono text-[11px] font-medium uppercase tracking-[0.18em]
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.05em]
       text-porcelain-600 dark:text-porcelain-400;
   }
 
