@@ -1,3 +1,53 @@
+// "Lumen Haze" identity: misty porcelain-blue surfaces, deep slate-blue ink,
+// one restrained brass accent. Everything tonal — no pure black, no pure white
+// slabs, no loud gradients. Legacy token names (warm/sage/slate/amber/primary)
+// are kept as aliases of the new ramps so existing class usage re-skins
+// without TSX churn.
+
+const porcelain = {
+  50: '#F7F8FA',
+  100: '#EFF1F5',
+  200: '#E2E6EC',
+  300: '#CDD3DE',
+  400: '#A9B2C3',
+  500: '#8A94A9',
+  600: '#67728A',
+  700: '#4B5568',
+  800: '#333B4C',
+  900: '#202633',
+};
+
+const mist = {
+  50: '#F4F6FA',
+  100: '#E9EDF4',
+  200: '#D8DEEA',
+  300: '#BFC9DB',
+  400: '#9DAAC4',
+  500: '#7B89A6',
+  600: '#5D6B87',
+  700: '#465269',
+  800: '#333C4E',
+  900: '#232A38',
+};
+
+const ink = {
+  950: '#0C101B',
+  900: '#131826',
+  850: '#181E2B',
+  800: '#1F2635',
+  700: '#2B3447',
+  600: '#39445A',
+  500: '#46536B',
+};
+
+const brass = {
+  300: '#D9BC85',
+  400: '#C8A25D',
+  500: '#B08A45',
+  600: '#8F6E33',
+  700: '#6F5527',
+};
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -5,85 +55,37 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Space Grotesk"', 'Inter', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Geist', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Instrument Serif"', 'Georgia', 'serif'],
+        mono: ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
-        // Primary brand identity — a luminous emerald-sage
-        primary: {
-          DEFAULT: '#1f8a5d',
-          light: '#5cb98c',
-          dark: '#136b46',
-        },
-        secondary: {
-          DEFAULT: '#D4CFC0',
-          light: '#E8E4D9',
-          dark: '#C0BCB0',
-        },
-        accent: {
-          DEFAULT: '#2fb59b',
-          gold: '#c9a962',
-        },
-        // Warm cream neutrals (light surfaces)
-        warm: {
-          50: '#FAF8F2',
-          100: '#EDE9DF',
-          200: '#DBD5C6',
-          300: '#C4BDAB',
-          400: '#A79F8E',
-          500: '#867E6F',
-          600: '#645D52',
-          700: '#463F38',
-          800: '#2A2621',
-          900: '#181511',
-        },
-        // Emerald / sage brand ramp
-        sage: {
-          50: '#EEF6F0',
-          100: '#D6EADD',
-          200: '#AFD6BE',
-          300: '#82BF9B',
-          400: '#4FA57A',
-          500: '#1f8a5d',
-          600: '#136b46',
-          700: '#0f5236',
-          800: '#0b3d28',
-          900: '#082c1d',
-        },
-        // Deep forest-charcoal ink (dark surfaces)
-        ink: {
-          950: '#070d0a',
-          900: '#0b130e',
-          850: '#0f1912',
-          800: '#142117',
-          700: '#1c2e21',
-          600: '#2a412f',
-          500: '#3a5641',
-        },
-        // Dark-mode surfaces route through the same forest-ink ramp so the
-        // existing `slate-*` classes stay on-brand.
-        slate: {
-          700: '#1c2e21',
-          800: '#0f1912',
-          850: '#0b130e',
-          900: '#070d0a',
-        },
-        amber: {
-          400: '#dcc07e',
-          500: '#c9a962',
-          600: '#b3924e',
-        },
-        dark: '#070d0a',
+        porcelain,
+        mist,
+        ink,
+        brass,
+        // Brass drives the micro-details (focus rings, spinners, ping dots)
+        // that already use `primary`.
+        primary: { DEFAULT: brass[500], light: brass[300], dark: brass[600] },
+        accent: { DEFAULT: mist[500], gold: brass[400] },
+        secondary: { DEFAULT: porcelain[300], light: porcelain[200], dark: porcelain[400] },
+        // Legacy aliases — same hexes, zero component churn.
+        warm: porcelain,
+        sage: mist,
+        slate: { 700: ink[700], 800: ink[850], 850: ink[900], 900: ink[950] },
+        amber: { 400: brass[300], 500: brass[400], 600: brass[500] },
+        dark: ink[950],
       },
       boxShadow: {
-        soft: '0 2px 8px -2px rgba(24, 40, 30, 0.08), 0 4px 20px -4px rgba(24, 40, 30, 0.08)',
-        lift: '0 10px 30px -10px rgba(24, 50, 34, 0.25), 0 2px 8px -2px rgba(24, 50, 34, 0.12)',
-        glow: '0 0 0 1px rgba(31, 138, 93, 0.18), 0 12px 40px -12px rgba(31, 138, 93, 0.45)',
-        'glow-lg': '0 20px 70px -20px rgba(31, 138, 93, 0.55)',
+        soft: '0 1px 2px rgba(19, 24, 38, 0.05), 0 4px 16px -6px rgba(19, 24, 38, 0.07)',
+        lift: '0 10px 28px -12px rgba(19, 24, 38, 0.22), 0 2px 6px -2px rgba(19, 24, 38, 0.08)',
+        glow: '0 0 0 1px rgba(200, 162, 93, 0.25), 0 8px 24px -10px rgba(200, 162, 93, 0.22)',
+        'glow-lg': '0 0 0 1px rgba(200, 162, 93, 0.30), 0 16px 44px -16px rgba(200, 162, 93, 0.28)',
       },
       backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #2fa374 0%, #1f8a5d 45%, #0f6b47 100%)',
-        'brand-sheen': 'linear-gradient(135deg, #5cb98c 0%, #1f8a5d 40%, #2fb59b 100%)',
+        // Near-flat tonal ink shifts — used for solid surfaces, not effects.
+        'brand-gradient': 'linear-gradient(150deg, #1F2635 0%, #131826 55%, #0C101B 100%)',
+        'brand-sheen': 'linear-gradient(150deg, #2B3447 0%, #1F2635 55%, #131826 100%)',
       },
       keyframes: {
         'slide-in': {

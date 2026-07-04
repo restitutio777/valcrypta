@@ -7,6 +7,7 @@ import { encryptMessage, decryptMessage, importPublicKey } from '../../lib/crypt
 import { sendFile, deleteMessage, MAX_FILE_SIZE, FileTooLargeError, FileMeta } from '../../lib/files';
 import { useUIStore } from '../../stores/ui-store';
 import FileMessage from './FileMessage';
+import { chat } from '../../lib/copy';
 
 type MessageRow = Database['public']['Tables']['messages']['Row'];
 
@@ -51,7 +52,7 @@ export default function ChatArea() {
   // decrypted_file_* fields the UI reads.
   const decryptRow = async (msg: MessageRow, isSender: boolean) => {
     if (!privateKey) {
-      return { ...msg, decrypted_content: isSender ? '[Sent message]' : '[Locked]' };
+      return { ...msg, decrypted_content: isSender ? chat.sentMessage : chat.cantDecrypt };
     }
     try {
       const decrypted = await decryptMessage(msg.encrypted_content, privateKey, isSender);
@@ -68,7 +69,7 @@ export default function ChatArea() {
           return {
             ...msg,
             decrypted_content: '',
-            decrypted_file_name: 'Encrypted file',
+            decrypted_file_name: chat.encryptedFile,
             decrypted_file_type: 'application/octet-stream',
           };
         }
@@ -77,7 +78,7 @@ export default function ChatArea() {
     } catch {
       return {
         ...msg,
-        decrypted_content: isSender ? '[Sent message]' : '[Could not decrypt]',
+        decrypted_content: isSender ? chat.sentMessage : chat.cantDecrypt,
       };
     }
   };
@@ -96,7 +97,7 @@ export default function ChatArea() {
       .order('created_at', { ascending: true });
 
     if (error) {
-      setNotification({ message: 'Failed to load messages', type: 'error' });
+      setNotification({ message: chat.errLoad, type: 'error' });
       setLoadingMessages(false);
       return;
     }
@@ -185,7 +186,7 @@ export default function ChatArea() {
       addMessage({ ...data, decrypted_content: message });
       setMessage('');
     } catch {
-      setNotification({ message: 'Failed to send message', type: 'error' });
+      setNotification({ message: chat.errSend, type: 'error' });
     } finally {
       setIsSending(false);
     }
@@ -197,7 +198,7 @@ export default function ChatArea() {
     if (!file || !activeContact || !user || !publicKey) return;
 
     if (file.size > MAX_FILE_SIZE) {
-      setNotification({ message: 'File is too large (max 25 MB)', type: 'error' });
+      setNotification({ message: chat.errFileTooLarge, type: 'error' });
       return;
     }
 
@@ -219,10 +220,7 @@ export default function ChatArea() {
         decrypted_file_type: file.type || 'application/octet-stream',
       });
     } catch (err) {
-      const msg =
-        err instanceof FileTooLargeError
-          ? 'File is too large (max 25 MB)'
-          : 'Failed to send file';
+      const msg = err instanceof FileTooLargeError ? chat.errFileTooLarge : chat.errSendFile;
       setNotification({ message: msg, type: 'error' });
     } finally {
       setIsUploading(false);
@@ -235,7 +233,7 @@ export default function ChatArea() {
       await deleteMessage({ id: msg.id, file_url: msg.file_url });
       removeMessage(msg.id);
     } catch {
-      setNotification({ message: 'Failed to delete message', type: 'error' });
+      setNotification({ message: chat.errDelete, type: 'error' });
     }
   };
 
@@ -243,18 +241,16 @@ export default function ChatArea() {
     return (
       <div className="aurora-bg flex flex-1 items-center justify-center bg-warm-50 dark:bg-ink-950">
         <div className="animate-fade-in-up px-6 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-brand-gradient shadow-glow">
-            <MessageSquare className="h-10 w-10 text-white" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-porcelain-200 dark:bg-ink-800">
+            <MessageSquare className="h-10 w-10 text-porcelain-600 dark:text-porcelain-300" />
           </div>
-          <h3 className="mb-2 font-display text-2xl font-bold text-warm-800 dark:text-warm-50">
-            Select a contact to start chatting
+          <h3 className="mb-2 text-2xl font-semibold text-warm-800 dark:text-warm-50">
+            {chat.emptyTitle}
           </h3>
-          <p className="mb-1 text-warm-600 dark:text-warm-300">
-            Search for users in the sidebar
-          </p>
+          <p className="mb-1 text-warm-600 dark:text-warm-300">{chat.emptySub}</p>
           <p className="inline-flex items-center gap-1.5 text-sm text-warm-500 dark:text-warm-400">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            All messages are end-to-end encrypted
+            {chat.emptyBadge}
           </p>
         </div>
       </div>
@@ -268,7 +264,7 @@ export default function ChatArea() {
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
               <div className="mx-auto mb-3 h-9 w-9 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
-              <p className="text-sm text-warm-500 dark:text-warm-300">Loading messages...</p>
+              <p className="text-sm text-warm-500 dark:text-warm-300">{chat.loadingMessages}</p>
             </div>
           </div>
         ) : messages.length === 0 ? (
@@ -277,9 +273,7 @@ export default function ChatArea() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sage-100 dark:bg-ink-700">
                 <Lock className="h-8 w-8 text-primary/70" />
               </div>
-              <p className="text-sm text-warm-600 dark:text-warm-300">
-                No messages yet. Start a secure conversation!
-              </p>
+              <p className="text-sm text-warm-600 dark:text-warm-300">{chat.noMessages}</p>
             </div>
           </div>
         ) : (
@@ -301,21 +295,21 @@ export default function ChatArea() {
                   (confirmDeleteId === msg.id ? (
                     <div className="flex items-center gap-1 rounded-2xl bg-white px-2 py-1 shadow-lift dark:bg-ink-800">
                       <span className="px-1 text-xs text-warm-500 dark:text-warm-400">
-                        Delete for both?
+                        {chat.deleteConfirm}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleDeleteMessage(msg)}
                         className="rounded-full px-2 py-0.5 text-xs font-medium text-red-500 transition hover:bg-red-500/10"
                       >
-                        Delete
+                        {chat.delete}
                       </button>
                       <button
                         type="button"
                         onClick={() => setConfirmDeleteId(null)}
                         className="rounded-full px-2 py-0.5 text-xs text-warm-500 transition hover:bg-sage-100 dark:text-warm-400 dark:hover:bg-ink-700"
                       >
-                        Cancel
+                        {chat.cancel}
                       </button>
                     </div>
                   ) : (
@@ -323,7 +317,7 @@ export default function ChatArea() {
                       type="button"
                       onClick={() => setConfirmDeleteId(msg.id)}
                       className="btn-ghost-icon flex-shrink-0 opacity-0 transition group-hover:opacity-100"
-                      title="Delete for everyone"
+                      title={chat.deleteTooltip}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -340,7 +334,7 @@ export default function ChatArea() {
                       keyPayload={msg.encrypted_file_key || ''}
                       isImage={msg.extension === 'image'}
                       fileSize={msg.file_size}
-                      fileName={msg.decrypted_file_name || 'Encrypted file'}
+                      fileName={msg.decrypted_file_name || chat.encryptedFile}
                       fileType={msg.decrypted_file_type || 'application/octet-stream'}
                       isOwn={isOwn}
                     />
@@ -353,7 +347,7 @@ export default function ChatArea() {
                   <div
                     className={`max-w-[78%] px-4 py-2.5 sm:max-w-[70%] ${
                       isOwn
-                        ? 'rounded-3xl rounded-br-lg bg-brand-gradient text-white shadow-lift'
+                        ? 'rounded-3xl rounded-br-lg bg-brand-gradient text-porcelain-50 shadow-soft ring-1 ring-ink-700/40 dark:ring-ink-600/60'
                         : 'rounded-3xl rounded-bl-lg border border-sage-100 bg-white text-warm-800 shadow-soft dark:border-ink-600/60 dark:bg-ink-800 dark:text-warm-100'
                     }`}
                   >
@@ -390,7 +384,7 @@ export default function ChatArea() {
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
             className="btn-ghost-icon flex-shrink-0 disabled:opacity-50"
-            title="Attach a file"
+            title={chat.attach}
           >
             {isUploading ? (
               <span className="block h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
@@ -408,7 +402,7 @@ export default function ChatArea() {
                 handleSendMessage(e);
               }
             }}
-            placeholder="Type an encrypted message..."
+            placeholder={chat.inputPlaceholder}
             className="input-field rounded-full px-5 py-3"
             disabled={isSending}
             autoFocus
@@ -417,7 +411,7 @@ export default function ChatArea() {
             type="submit"
             disabled={isSending || !message.trim()}
             className="btn-primary flex h-12 w-12 flex-shrink-0 items-center justify-center !rounded-full"
-            title="Send"
+            title={chat.send}
           >
             <Send className="h-5 w-5 -translate-x-px translate-y-px" />
           </button>

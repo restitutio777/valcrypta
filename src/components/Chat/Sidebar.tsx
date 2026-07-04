@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
 import { clearUnlockedKey } from '../../lib/key-session';
 import ValCryptaLogo from '../ValCryptaLogo';
+import { sidebar, chat } from '../../lib/copy';
 
 type UserRow = Database['public']['Tables']['users']['Row'];
 
@@ -71,14 +72,14 @@ export default function Sidebar() {
 
       if (error) {
         console.error('Search error:', error);
-        setNotification({ message: 'Failed to search users', type: 'error' });
+        setNotification({ message: sidebar.errSearch, type: 'error' });
         setSearchResults([]);
       } else {
         setSearchResults(data || []);
       }
     } catch (err) {
       console.error('Search exception:', err);
-      setNotification({ message: 'Search failed', type: 'error' });
+      setNotification({ message: sidebar.errSearch, type: 'error' });
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -104,7 +105,7 @@ export default function Sidebar() {
     if (!error) {
       addContact(contact);
       setActiveContact(contact);
-      setNotification({ message: 'Contact added successfully', type: 'success' });
+      setNotification({ message: sidebar.contactAdded, type: 'success' });
     }
 
     setSearchQuery('');
@@ -132,25 +133,25 @@ export default function Sidebar() {
             <button
               onClick={() => setShowEncryptionInfo(true)}
               className="btn-ghost-icon"
-              title="How encryption works"
+              title={sidebar.infoTooltip}
             >
               <Info className="h-5 w-5" />
             </button>
             <button
               onClick={() => setShowSecuritySettings(true)}
               className="btn-ghost-icon"
-              title="Security level"
+              title={sidebar.securityTooltip}
             >
               <Settings2 className="h-5 w-5" />
             </button>
-            <button onClick={toggleDarkMode} className="btn-ghost-icon" title="Toggle dark mode">
+            <button onClick={toggleDarkMode} className="btn-ghost-icon" title={sidebar.darkModeTooltip}>
               {darkMode ? (
                 <Sun className="h-5 w-5 text-accent-gold" />
               ) : (
                 <Moon className="h-5 w-5" />
               )}
             </button>
-            <button onClick={handleLogout} className="btn-ghost-icon" title="Logout">
+            <button onClick={handleLogout} className="btn-ghost-icon" title={sidebar.logoutTooltip}>
               <LogOut className="h-5 w-5" />
             </button>
           </div>
@@ -162,7 +163,7 @@ export default function Sidebar() {
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Find people by username…"
+            placeholder={sidebar.searchPlaceholder}
             className="input-field py-3 pl-10 pr-9"
           />
           {isSearching && searchQuery.length >= 2 && (
@@ -174,7 +175,7 @@ export default function Sidebar() {
 
         {searchQuery.length >= 2 && !isSearching && searchResults.length === 0 && (
           <div className="glass-card animate-pop-in absolute left-4 right-4 z-50 mt-2 rounded-2xl p-4 shadow-lift">
-            <p className="text-center text-sm text-warm-500 dark:text-warm-300">No users found</p>
+            <p className="text-center text-sm text-warm-500 dark:text-warm-300">{sidebar.noUsers}</p>
           </div>
         )}
 
@@ -196,7 +197,7 @@ export default function Sidebar() {
                       {result.username}
                     </p>
                     <p className="truncate text-xs text-warm-500 dark:text-warm-300">
-                      {isAlreadyContact ? 'Already connected — tap to open' : 'Tap to start chatting'}
+                      {isAlreadyContact ? sidebar.alreadyContact : sidebar.tapToChat}
                     </p>
                   </div>
                   <UserPlus className="h-5 w-5 flex-shrink-0 text-warm-400 transition-all duration-200 group-hover:scale-110 group-hover:text-primary" />
@@ -213,12 +214,11 @@ export default function Sidebar() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sage-100 dark:bg-ink-700">
               <UserPlus className="h-8 w-8 text-primary/70" />
             </div>
-            <p className="mb-2 font-display font-semibold text-warm-700 dark:text-warm-100">
-              Start your first chat
+            <p className="mb-2 font-semibold text-warm-700 dark:text-warm-100">
+              {sidebar.emptyTitle}
             </p>
             <p className="max-w-[16rem] text-sm leading-relaxed text-warm-500 dark:text-warm-300">
-              Type a username in the search box above — one tap connects you, end-to-end
-              encrypted.
+              {sidebar.emptyBody}
             </p>
           </div>
         ) : (
@@ -245,7 +245,7 @@ export default function Sidebar() {
                     <p
                       className={`truncate text-base font-semibold ${
                         isActive
-                          ? 'text-primary-dark dark:text-primary-light'
+                          ? 'text-ink-900 dark:text-porcelain-50'
                           : 'text-warm-800 dark:text-warm-50'
                       }`}
                     >
@@ -253,7 +253,7 @@ export default function Sidebar() {
                     </p>
                     <p className="flex items-center gap-1 truncate text-sm text-warm-500 dark:text-warm-300">
                       <Lock className="h-3 w-3 text-primary/60" />
-                      Encrypted chat
+                      {chat.encryptedChat}
                     </p>
                   </div>
                 </button>
