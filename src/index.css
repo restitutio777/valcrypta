@@ -4,7 +4,7 @@
 
 @layer base {
   html {
-    font-family: 'Geist', 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'Satoshi', 'Inter', ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -18,12 +18,12 @@
     @apply bg-ink-950 text-porcelain-100;
   }
 
-  /* Headings default to the UI grotesk; the display voice (Instrument Sans,
-     variable 400–600) is opt-in via font-display on the landing page. */
+  /* Satoshi (Fontshare) is the whole type system — display + UI. Headlines
+     differ from body only by size, weight, and tracking. */
   h1,
   h2,
   h3 {
-    font-family: 'Geist', 'Inter', ui-sans-serif, sans-serif;
+    font-family: 'Satoshi', 'Inter', ui-sans-serif, sans-serif;
     letter-spacing: -0.01em;
   }
 
