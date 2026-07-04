@@ -22,4 +22,6 @@ React 18 + TypeScript + Vite SPA, Supabase (Auth/Postgres/Realtime) backend, cli
 - Signup/login key handling -> [src/components/Auth/SignupPage.tsx](src/components/Auth/SignupPage.tsx) / [src/components/Auth/LoginPage.tsx](src/components/Auth/LoginPage.tsx)
 - Global/session state -> [src/stores/](src/stores)
 - Deployment: Vercel project `bolteds-projects/valcrypta`, auto-deploys `main` from GitHub `restitutio777/valcrypta`
+- NOTE: the live DB has more schema than init.sql (file columns on `messages`, `typing_status`/`unread_counts`/notification tables, private storage bucket `encrypted_files` with policies) — audit the live DB before writing migrations
+- File-sharing feature plan (ready to implement): [docs/PLAN-file-sharing.md](docs/PLAN-file-sharing.md)
 <!-- END CODE-MAP -->
