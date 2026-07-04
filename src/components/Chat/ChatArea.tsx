@@ -1,19 +1,32 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Lock, MessageSquare, ShieldCheck } from 'lucide-react';
+import { Send, Lock, MessageSquare, ShieldCheck, Paperclip, Trash2 } from 'lucide-react';
 import { supabase, Database } from '../../lib/supabase';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { encryptMessage, decryptMessage, importPublicKey } from '../../lib/crypto';
+import { sendFile, deleteMessage, MAX_FILE_SIZE, FileTooLargeError, FileMeta } from '../../lib/files';
 import { useUIStore } from '../../stores/ui-store';
+import FileMessage from './FileMessage';
 
 type MessageRow = Database['public']['Tables']['messages']['Row'];
 
 export default function ChatArea() {
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { activeContact, messages, setMessages, addMessage, setLoadingMessages, isLoadingMessages } = useChatStore();
+  const {
+    activeContact,
+    messages,
+    setMessages,
+    addMessage,
+    removeMessage,
+    setLoadingMessages,
+    isLoadingMessages,
+  } = useChatStore();
   const { user, publicKey, privateKey } = useAuthStore();
   const { setNotification } = useUIStore();
 
@@ -31,6 +44,42 @@ export default function ChatArea() {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Decrypt a row for display. File messages carry their real filename/MIME as
+  // an encrypted JSON body inside encrypted_content; unpack it into the
+  // decrypted_file_* fields the UI reads.
+  const decryptRow = async (msg: MessageRow, isSender: boolean) => {
+    if (!privateKey) {
+      return { ...msg, decrypted_content: isSender ? '[Sent message]' : '[Locked]' };
+    }
+    try {
+      const decrypted = await decryptMessage(msg.encrypted_content, privateKey, isSender);
+      if (msg.file_url) {
+        try {
+          const meta = JSON.parse(decrypted) as FileMeta;
+          return {
+            ...msg,
+            decrypted_content: meta.note ?? '',
+            decrypted_file_name: meta.name,
+            decrypted_file_type: meta.mime,
+          };
+        } catch {
+          return {
+            ...msg,
+            decrypted_content: '',
+            decrypted_file_name: 'Encrypted file',
+            decrypted_file_type: 'application/octet-stream',
+          };
+        }
+      }
+      return { ...msg, decrypted_content: decrypted };
+    } catch {
+      return {
+        ...msg,
+        decrypted_content: isSender ? '[Sent message]' : '[Could not decrypt]',
+      };
+    }
   };
 
   const loadMessages = async () => {
@@ -53,18 +102,7 @@ export default function ChatArea() {
     }
 
     const decryptedMessages = await Promise.all(
-      (data || []).map(async (msg) => {
-        const isSender = msg.sender_id === user.id;
-        try {
-          const decrypted = await decryptMessage(msg.encrypted_content, privateKey, isSender);
-          return { ...msg, decrypted_content: decrypted };
-        } catch {
-          return {
-            ...msg,
-            decrypted_content: isSender ? '[Sent message]' : '[Could not decrypt]',
-          };
-        }
-      })
+      (data || []).map((msg) => decryptRow(msg, msg.sender_id === user.id))
     );
 
     setMessages(decryptedMessages);
@@ -75,7 +113,6 @@ export default function ChatArea() {
     if (!activeContact || !user) return () => {};
 
     const channelName = `messages-${user.id}-${activeContact.id}`;
-    console.log('Subscribing to channel:', channelName);
 
     const channel = supabase
       .channel(channelName)
@@ -88,33 +125,32 @@ export default function ChatArea() {
           filter: `recipient_id=eq.${user.id}`,
         },
         async (payload) => {
-          console.log('New message received:', payload);
           const newMessage = payload.new as MessageRow;
           if (newMessage.sender_id === activeContact.id) {
-            try {
-              if (!privateKey) return;
-              const decrypted = await decryptMessage(
-                newMessage.encrypted_content,
-                privateKey,
-                false
-              );
-              addMessage({ ...newMessage, decrypted_content: decrypted });
-            } catch (error) {
-              console.error('Decryption error:', error);
-              addMessage({
-                ...newMessage,
-                decrypted_content: '[Could not decrypt]',
-              });
-            }
+            const decrypted = await decryptRow(newMessage, false);
+            addMessage(decrypted);
           }
         }
       )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
+      .on(
+        'postgres_changes',
+        {
+          // DELETE events carry only the old primary key (default replica
+          // identity), so there is nothing to filter on — match the id against
+          // loaded messages and drop the bubble if present. This powers
+          // "delete for everyone" on the receiving side.
+          event: 'DELETE',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const oldId = (payload.old as { id?: string })?.id;
+          if (oldId) removeMessage(oldId);
+        }
+      )
+      .subscribe();
 
     return () => {
-      console.log('Unsubscribing from channel:', channelName);
       supabase.removeChannel(channel);
     };
   };
@@ -152,6 +188,54 @@ export default function ChatArea() {
       setNotification({ message: 'Failed to send message', type: 'error' });
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file
+    if (!file || !activeContact || !user || !publicKey) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      setNotification({ message: 'File is too large (max 25 MB)', type: 'error' });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const recipientPublicKey = await importPublicKey(activeContact.public_key);
+      const senderPublicKey = await importPublicKey(publicKey);
+      const row = await sendFile({
+        file,
+        senderId: user.id,
+        recipientId: activeContact.id,
+        recipientPublicKey,
+        senderPublicKey,
+      });
+      addMessage({
+        ...row,
+        decrypted_content: '',
+        decrypted_file_name: file.name,
+        decrypted_file_type: file.type || 'application/octet-stream',
+      });
+    } catch (err) {
+      const msg =
+        err instanceof FileTooLargeError
+          ? 'File is too large (max 25 MB)'
+          : 'Failed to send file';
+      setNotification({ message: msg, type: 'error' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleDeleteMessage = async (msg: MessageRow) => {
+    setConfirmDeleteId(null);
+    try {
+      await deleteMessage({ id: msg.id, file_url: msg.file_url });
+      removeMessage(msg.id);
+    } catch {
+      setNotification({ message: 'Failed to delete message', type: 'error' });
     }
   };
 
@@ -201,33 +285,91 @@ export default function ChatArea() {
         ) : (
           messages.map((msg) => {
             const isOwn = msg.sender_id === user?.id;
+            const isFile = !!msg.file_url;
+            const timeLabel = new Date(msg.created_at).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
             return (
               <div
                 key={msg.id}
-                className={`flex animate-pop-in ${isOwn ? 'justify-end' : 'justify-start'}`}
+                className={`group flex animate-pop-in items-center gap-1.5 ${
+                  isOwn ? 'justify-end' : 'justify-start'
+                }`}
               >
-                <div
-                  className={`max-w-[78%] px-4 py-2.5 sm:max-w-[70%] ${
-                    isOwn
-                      ? 'rounded-3xl rounded-br-lg bg-brand-gradient text-white shadow-lift'
-                      : 'rounded-3xl rounded-bl-lg border border-sage-100 dark:border-ink-600/60 bg-white dark:bg-ink-800 text-warm-800 dark:text-warm-100 shadow-soft'
-                  }`}
-                >
-                  <p className="break-words text-base leading-relaxed">
-                    {msg.decrypted_content}
-                  </p>
-                  <p
-                    className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
-                      isOwn ? 'text-white/70' : 'text-warm-400 dark:text-warm-500'
+                {isOwn &&
+                  (confirmDeleteId === msg.id ? (
+                    <div className="flex items-center gap-1 rounded-2xl bg-white px-2 py-1 shadow-lift dark:bg-ink-800">
+                      <span className="px-1 text-xs text-warm-500 dark:text-warm-400">
+                        Delete for both?
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMessage(msg)}
+                        className="rounded-full px-2 py-0.5 text-xs font-medium text-red-500 transition hover:bg-red-500/10"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteId(null)}
+                        className="rounded-full px-2 py-0.5 text-xs text-warm-500 transition hover:bg-sage-100 dark:text-warm-400 dark:hover:bg-ink-700"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeleteId(msg.id)}
+                      className="btn-ghost-icon flex-shrink-0 opacity-0 transition group-hover:opacity-100"
+                      title="Delete for everyone"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  ))}
+
+                {isFile ? (
+                  <div
+                    className={`flex max-w-[78%] flex-col gap-1 sm:max-w-[70%] ${
+                      isOwn ? 'items-end' : 'items-start'
                     }`}
                   >
-                    <Lock className="h-2.5 w-2.5" />
-                    {new Date(msg.created_at).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
-                </div>
+                    <FileMessage
+                      fileUrl={msg.file_url as string}
+                      keyPayload={msg.encrypted_file_key || ''}
+                      isImage={msg.extension === 'image'}
+                      fileSize={msg.file_size}
+                      fileName={msg.decrypted_file_name || 'Encrypted file'}
+                      fileType={msg.decrypted_file_type || 'application/octet-stream'}
+                      isOwn={isOwn}
+                    />
+                    <span className="flex items-center gap-1 px-1 text-[10px] text-warm-400 dark:text-warm-500">
+                      <Lock className="h-2.5 w-2.5" />
+                      {timeLabel}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    className={`max-w-[78%] px-4 py-2.5 sm:max-w-[70%] ${
+                      isOwn
+                        ? 'rounded-3xl rounded-br-lg bg-brand-gradient text-white shadow-lift'
+                        : 'rounded-3xl rounded-bl-lg border border-sage-100 bg-white text-warm-800 shadow-soft dark:border-ink-600/60 dark:bg-ink-800 dark:text-warm-100'
+                    }`}
+                  >
+                    <p className="break-words text-base leading-relaxed">
+                      {msg.decrypted_content}
+                    </p>
+                    <p
+                      className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
+                        isOwn ? 'text-white/70' : 'text-warm-400 dark:text-warm-500'
+                      }`}
+                    >
+                      <Lock className="h-2.5 w-2.5" />
+                      {timeLabel}
+                    </p>
+                  </div>
+                )}
               </div>
             );
           })
@@ -235,8 +377,27 @@ export default function ChatArea() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="safe-bottom border-t border-sage-100 dark:border-ink-700/60 bg-white/70 dark:bg-ink-900/80 p-3 backdrop-blur-xl sm:p-4">
+      <div className="safe-bottom border-t border-sage-100 bg-white/70 p-3 backdrop-blur-xl dark:border-ink-700/60 dark:bg-ink-900/80 sm:p-4">
         <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="btn-ghost-icon flex-shrink-0 disabled:opacity-50"
+            title="Attach a file"
+          >
+            {isUploading ? (
+              <span className="block h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            ) : (
+              <Paperclip className="h-5 w-5" />
+            )}
+          </button>
           <input
             type="text"
             value={message}

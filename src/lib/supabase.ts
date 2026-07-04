@@ -43,6 +43,13 @@ export type Database = {
           encrypted_content: string;
           created_at: string;
           read_at: string | null;
+          topic: string | null;
+          extension: string | null;
+          file_name: string | null;
+          file_type: string | null;
+          file_size: number | null;
+          file_url: string | null;
+          encrypted_file_key: string | null;
         };
         Insert: {
           id?: string;
@@ -51,6 +58,13 @@ export type Database = {
           encrypted_content: string;
           created_at?: string;
           read_at?: string | null;
+          topic?: string | null;
+          extension?: string | null;
+          file_name?: string | null;
+          file_type?: string | null;
+          file_size?: number | null;
+          file_url?: string | null;
+          encrypted_file_key?: string | null;
         };
         Update: {
           id?: string;
@@ -59,6 +73,13 @@ export type Database = {
           encrypted_content?: string;
           created_at?: string;
           read_at?: string | null;
+          topic?: string | null;
+          extension?: string | null;
+          file_name?: string | null;
+          file_type?: string | null;
+          file_size?: number | null;
+          file_url?: string | null;
+          encrypted_file_key?: string | null;
         };
       };
       contacts: {
