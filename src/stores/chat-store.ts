@@ -3,6 +3,10 @@ import { Database } from '../lib/supabase';
 
 type Message = Database['public']['Tables']['messages']['Row'] & {
   decrypted_content?: string;
+  // Decrypted attachment metadata (real filename/MIME live encrypted inside
+  // encrypted_content; these are populated after decryption for display).
+  decrypted_file_name?: string;
+  decrypted_file_type?: string;
   sender?: {
     username: string;
     email: string;
@@ -24,6 +28,7 @@ interface ChatState {
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
   updateMessage: (id: string, updates: Partial<Message>) => void;
+  removeMessage: (id: string) => void;
   setContacts: (contacts: Contact[]) => void;
   addContact: (contact: Contact) => void;
   setActiveContact: (contact: Contact | null) => void;
@@ -45,6 +50,10 @@ export const useChatStore = create<ChatState>((set) => ({
       messages: state.messages.map((msg) =>
         msg.id === id ? { ...msg, ...updates } : msg
       ),
+    })),
+  removeMessage: (id) =>
+    set((state) => ({
+      messages: state.messages.filter((msg) => msg.id !== id),
     })),
   setContacts: (contacts) => set({ contacts }),
   addContact: (contact) =>

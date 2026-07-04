@@ -44,9 +44,37 @@ CREATE TABLE IF NOT EXISTS messages (
   sender_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   recipient_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   encrypted_content text NOT NULL,
+  -- Legacy sender-copy column (superseded by the v2 hybrid `sk` wrap inside
+  -- encrypted_content); retained because production still has it.
+  encrypted_for_sender text,
   created_at timestamptz DEFAULT now(),
-  read_at timestamptz
+  read_at timestamptz,
+  -- Message routing/kind metadata.
+  topic text DEFAULT 'chat',
+  extension text DEFAULT 'text',        -- 'text' | 'file' | 'image'
+  -- E2E-encrypted file attachment (all plaintext columns are generic; the real
+  -- filename/MIME live encrypted inside encrypted_content, see src/lib/files.ts).
+  file_name text,                       -- generic placeholder ('encrypted')
+  file_type text,                       -- generic ('application/octet-stream')
+  file_size bigint,                     -- plaintext byte count (UI hint only)
+  file_url text,                        -- object path in the encrypted_files bucket
+  encrypted_file_key text               -- JSON { v:2, rk, sk }: AES key RSA-wrapped
 );
+
+-- Columns added after the original release (production drifted ahead of this
+-- file); ALTERs keep an already-provisioned database in sync when re-run.
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS encrypted_for_sender text;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS topic text DEFAULT 'chat';
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS extension text DEFAULT 'text';
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_name text;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_type text;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_size bigint;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS file_url text;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS encrypted_file_key text;
+
+-- Full old row in the WAL so Realtime can evaluate the RLS SELECT policy on
+-- DELETE events and deliver "delete for everyone" to the recipient live.
+ALTER TABLE messages REPLICA IDENTITY FULL;
 
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
@@ -71,6 +99,15 @@ CREATE POLICY "Users can update received messages"
   TO authenticated
   USING (auth.uid() = recipient_id)
   WITH CHECK (auth.uid() = recipient_id);
+
+-- Sender can delete their own message ("delete for everyone"). See
+-- supabase/migrations/20260704120000_add_messages_delete_policy.sql.
+DROP POLICY IF EXISTS "Senders can delete own messages" ON messages;
+CREATE POLICY "Senders can delete own messages"
+  ON messages
+  FOR DELETE
+  TO authenticated
+  USING ((select auth.uid()) = sender_id);
 
 CREATE INDEX IF NOT EXISTS messages_sender_idx ON messages(sender_id);
 CREATE INDEX IF NOT EXISTS messages_recipient_idx ON messages(recipient_id);
@@ -155,3 +192,65 @@ CREATE POLICY "Users can delete own key backup"
   FOR DELETE
   TO authenticated
   USING (auth.uid() = user_id);
+
+-- Encrypted file storage
+-- Private bucket holding E2E-encrypted attachment ciphertext (iv || AES-GCM
+-- ciphertext). Objects live under a {senderId}/{uuid} path; the original
+-- filename never appears in the path (it is metadata and belongs encrypted).
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('encrypted_files', 'encrypted_files', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Access check for downloads: a caller may read an object only if a messages
+-- row references it as file_url and names them as sender or recipient.
+-- SECURITY DEFINER so the storage SELECT policy can read the messages table.
+CREATE OR REPLACE FUNCTION public.has_file_access(file_path text, user_id uuid)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'pg_catalog'
+AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.messages
+    WHERE file_url = file_path
+      AND (sender_id = user_id OR recipient_id = user_id)
+  );
+END;
+$$;
+
+DROP POLICY IF EXISTS "Users can upload own files" ON storage.objects;
+CREATE POLICY "Users can upload own files"
+  ON storage.objects
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'encrypted_files'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+DROP POLICY IF EXISTS "Users can view accessible files" ON storage.objects;
+CREATE POLICY "Users can view accessible files"
+  ON storage.objects
+  FOR SELECT
+  TO authenticated
+  USING (
+    bucket_id = 'encrypted_files'
+    AND has_file_access(name, auth.uid())
+  );
+
+DROP POLICY IF EXISTS "Users can delete own files" ON storage.objects;
+CREATE POLICY "Users can delete own files"
+  ON storage.objects
+  FOR DELETE
+  TO authenticated
+  USING (
+    bucket_id = 'encrypted_files'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- NOTE: production also contains additional, separately-prepared feature tables
+-- (typing_status, unread_counts, notification_settings, email_notification_queue)
+-- and their triggers/functions, which are outside the file-sharing scope of this
+-- file and are not reproduced here.

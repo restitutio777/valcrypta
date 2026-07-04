@@ -238,6 +238,89 @@ export async function decryptMessage(
   return dec.decode(decrypted);
 }
 
+// Hybrid file encryption (v2): mirrors encryptMessage but operates on raw
+// bytes. A fresh AES-GCM-256 key encrypts the file; the ciphertext blob is
+// laid out as iv || ct (the IV is the first IV_LENGTH bytes). The AES key is
+// RSA-wrapped once for the recipient (rk) and once for the sender (sk) so the
+// sender can re-open their own uploads. The wrap payload is stored separately
+// from the ciphertext (in the messages.encrypted_file_key column).
+interface FileKeyPayload {
+  v: 2;
+  rk: string;
+  sk: string;
+}
+
+export async function encryptFile(
+  data: ArrayBuffer,
+  recipientPublicKey: CryptoKey,
+  senderPublicKey: CryptoKey
+): Promise<{ ciphertext: ArrayBuffer; keyPayload: string }> {
+  const aesKey = await crypto.subtle.generateKey(
+    { name: 'AES-GCM', length: 256 },
+    true,
+    ['encrypt', 'decrypt']
+  );
+  const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, data);
+
+  const combined = new Uint8Array(IV_LENGTH + ct.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ct), IV_LENGTH);
+
+  const rawAesKey = await crypto.subtle.exportKey('raw', aesKey);
+  const wrappedForRecipient = await crypto.subtle.encrypt(
+    { name: 'RSA-OAEP' },
+    recipientPublicKey,
+    rawAesKey
+  );
+  const wrappedForSender = await crypto.subtle.encrypt(
+    { name: 'RSA-OAEP' },
+    senderPublicKey,
+    rawAesKey
+  );
+
+  const payload: FileKeyPayload = {
+    v: 2,
+    rk: arrayBufferToBase64(wrappedForRecipient),
+    sk: arrayBufferToBase64(wrappedForSender),
+  };
+
+  return { ciphertext: combined.buffer, keyPayload: JSON.stringify(payload) };
+}
+
+export async function decryptFile(
+  ciphertext: ArrayBuffer,
+  keyPayload: string,
+  privateKey: CryptoKey,
+  isSender: boolean
+): Promise<ArrayBuffer> {
+  const payload = JSON.parse(keyPayload) as FileKeyPayload;
+  if (payload.v !== 2) {
+    throw new Error('Unsupported file key payload version');
+  }
+
+  const wrappedKey = base64ToArrayBuffer(isSender ? payload.sk : payload.rk);
+  const rawAesKey = await crypto.subtle.decrypt(
+    { name: 'RSA-OAEP' },
+    privateKey,
+    wrappedKey
+  );
+  const aesKey = await crypto.subtle.importKey(
+    'raw',
+    rawAesKey,
+    { name: 'AES-GCM' },
+    false,
+    ['decrypt']
+  );
+
+  const bytes = new Uint8Array(ciphertext);
+  const iv = bytes.slice(0, IV_LENGTH);
+  const ct = bytes.slice(IV_LENGTH);
+
+  return await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, aesKey, ct);
+}
+
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
