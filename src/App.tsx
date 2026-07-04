@@ -59,10 +59,13 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sage-50 via-warm-50 to-accent/10 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary dark:border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-warm-600 dark:text-slate-300">Loading...</p>
+      <div className="aurora-bg min-h-screen bg-gradient-to-br from-sage-50 via-warm-50 to-sage-100 dark:from-ink-950 dark:via-ink-900 dark:to-ink-850 flex items-center justify-center">
+        <div className="text-center animate-fade-in">
+          <div className="relative mx-auto mb-5 h-16 w-16">
+            <div className="absolute inset-0 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
+            <div className="absolute inset-3 rounded-full bg-brand-gradient opacity-20 animate-glow-pulse" />
+          </div>
+          <p className="font-medium text-warm-500 dark:text-warm-300">Loading...</p>
         </div>
       </div>
     );

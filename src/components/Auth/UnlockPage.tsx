@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Lock, Eye, EyeOff, LogOut } from 'lucide-react';
+import { Lock, Eye, EyeOff, LogOut, KeyRound } from 'lucide-react';
 import ValCryptaLogo from '../ValCryptaLogo';
 import { supabase } from '../../lib/supabase';
 import { getEncryptedPrivateKey } from '../../lib/storage';
@@ -58,35 +58,38 @@ export default function UnlockPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-warm-50 via-sage-50 to-warm-100 dark:from-slate-900 dark:via-slate-850 dark:to-slate-800 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-2xl shadow-lg p-8 border border-warm-200 dark:border-slate-700 animate-fade-in-up">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
+    <div className="aurora-bg min-h-screen bg-gradient-to-br from-warm-50 via-sage-50 to-warm-100 dark:from-ink-950 dark:via-ink-900 dark:to-ink-850 flex items-center justify-center p-4">
+      <div className="glass-card w-full max-w-md rounded-3xl p-8 shadow-lift animate-scale-in">
+        <div className="mb-8 text-center">
+          <div className="mb-5 flex justify-center">
             <ValCryptaLogo size="lg" showText={false} />
           </div>
-          <h1 className="text-3xl font-bold text-warm-800 dark:text-warm-50 mb-2">
+          <h1 className="mb-2 font-display text-3xl font-bold text-warm-800 dark:text-warm-50">
             Unlock Your Messages
           </h1>
-          <p className="text-warm-600 dark:text-warm-300">
+          <p className="text-warm-500 dark:text-warm-300">
             Enter your password to decrypt your private key
           </p>
           {user?.email && (
-            <p className="text-sm text-warm-500 dark:text-warm-400 mt-2">{user.email}</p>
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-sage-200/80 dark:border-ink-600 bg-white/50 dark:bg-ink-800/50 px-3 py-1 text-sm text-warm-600 dark:text-warm-300">
+              <KeyRound className="h-3.5 w-3.5 text-primary" />
+              {user.email}
+            </div>
           )}
         </div>
 
-        <form onSubmit={handleUnlock} className="space-y-4">
+        <form onSubmit={handleUnlock} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-warm-700 dark:text-warm-200 mb-2">
+            <label className="mb-2 block text-sm font-semibold text-warm-700 dark:text-warm-200">
               Password
             </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-warm-400" />
+            <div className="group relative">
+              <Lock className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
               <input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-12 py-3 border border-warm-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-amber-500 focus:border-transparent bg-warm-50 dark:bg-slate-700 text-warm-800 dark:text-slate-100"
+                className="input-field py-3 pl-11 pr-12"
                 placeholder="••••••••"
                 required
                 autoFocus
@@ -94,24 +97,20 @@ export default function UnlockPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-warm-400 hover:text-warm-600 dark:hover:text-warm-300"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-warm-400 transition-colors hover:text-primary"
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
           </div>
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 text-sm text-red-800 dark:text-red-200">
+            <div className="animate-pop-in rounded-xl border border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/20 p-3 text-sm text-red-800 dark:text-red-200">
               {error}
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-primary hover:bg-primary-dark disabled:bg-warm-300 text-white font-medium py-3 rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
-          >
+          <button type="submit" disabled={isLoading} className="btn-primary w-full py-3.5">
             {isLoading ? 'Unlocking...' : 'Unlock'}
           </button>
         </form>
@@ -119,9 +118,9 @@ export default function UnlockPage() {
         <div className="mt-6 text-center">
           <button
             onClick={handleSignOut}
-            className="inline-flex items-center gap-2 text-warm-600 dark:text-warm-300 hover:text-warm-800 dark:hover:text-warm-100 text-sm"
+            className="inline-flex items-center gap-2 text-sm text-warm-500 dark:text-warm-300 transition-colors hover:text-warm-800 dark:hover:text-warm-100"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="h-4 w-4" />
             Sign out and use a different account
           </button>
         </div>

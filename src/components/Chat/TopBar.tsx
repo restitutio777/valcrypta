@@ -1,4 +1,4 @@
-import { LogOut, Moon, Sun, Info } from 'lucide-react';
+import { LogOut, Moon, Sun, Info, ShieldCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuthStore } from '../../stores/auth-store';
 import { useChatStore } from '../../stores/chat-store';
@@ -19,57 +19,55 @@ export default function TopBar() {
   };
 
   return (
-    <div className="h-16 bg-white dark:bg-slate-800 border-b border-warm-200 dark:border-slate-700 flex items-center justify-between px-6">
-      <div className="flex items-center gap-3">
+    <div className="flex h-16 items-center justify-between border-b border-sage-100 dark:border-ink-700/60 bg-white/70 dark:bg-ink-900/80 px-4 backdrop-blur-xl sm:px-6">
+      <div className="flex items-center gap-3 pl-12 lg:pl-0">
         {activeContact ? (
           <>
-            <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-amber-500/20 flex items-center justify-center">
-              <span className="text-primary dark:text-amber-500 font-semibold">
-                {activeContact.username[0].toUpperCase()}
-              </span>
+            <div className="avatar-disc h-10 w-10 text-sm">
+              {activeContact.username[0].toUpperCase()}
             </div>
             <div>
-              <h2 className="font-semibold text-warm-800 dark:text-slate-100">
+              <h2 className="font-display font-semibold leading-tight text-warm-800 dark:text-warm-50">
                 {activeContact.username}
               </h2>
-              <p className="text-xs text-primary dark:text-amber-500 flex items-center gap-1">
-                <span className="w-2 h-2 bg-primary dark:bg-amber-500 rounded-full"></span>
+              <p className="flex items-center gap-1.5 text-xs font-medium text-primary-dark dark:text-primary-light">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-50" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                </span>
                 End-to-end encrypted
               </p>
             </div>
           </>
         ) : (
-          <h2 className="font-semibold text-warm-800 dark:text-slate-100">ValCrypta</h2>
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            <h2 className="font-display font-semibold text-warm-800 dark:text-warm-50">
+              ValCrypta
+            </h2>
+          </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <button
           onClick={() => setShowEncryptionInfo(true)}
-          className="p-2 hover:bg-warm-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+          className="btn-ghost-icon"
           title="How encryption works"
         >
-          <Info className="w-5 h-5 text-warm-600 dark:text-slate-300" />
+          <Info className="h-5 w-5" />
         </button>
 
-        <button
-          onClick={toggleDarkMode}
-          className="p-2 hover:bg-warm-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-          title="Toggle dark mode"
-        >
+        <button onClick={toggleDarkMode} className="btn-ghost-icon" title="Toggle dark mode">
           {darkMode ? (
-            <Sun className="w-5 h-5 text-warm-600 dark:text-amber-400" />
+            <Sun className="h-5 w-5 text-accent-gold" />
           ) : (
-            <Moon className="w-5 h-5 text-warm-600 dark:text-slate-300" />
+            <Moon className="h-5 w-5" />
           )}
         </button>
 
-        <button
-          onClick={handleLogout}
-          className="p-2 hover:bg-warm-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-          title="Logout"
-        >
-          <LogOut className="w-5 h-5 text-warm-600 dark:text-slate-300" />
+        <button onClick={handleLogout} className="btn-ghost-icon" title="Logout">
+          <LogOut className="h-5 w-5" />
         </button>
       </div>
     </div>

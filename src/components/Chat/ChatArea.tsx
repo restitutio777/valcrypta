@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Lock, MessageSquare } from 'lucide-react';
+import { Send, Lock, MessageSquare, ShieldCheck } from 'lucide-react';
 import { supabase, Database } from '../../lib/supabase';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
@@ -157,16 +157,19 @@ export default function ChatArea() {
 
   if (!activeContact) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-warm-50 dark:bg-slate-900">
-        <div className="text-center">
-          <MessageSquare className="w-16 h-16 text-warm-300 dark:text-slate-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-warm-700 dark:text-slate-200 mb-2">
+      <div className="aurora-bg flex flex-1 items-center justify-center bg-warm-50 dark:bg-ink-950">
+        <div className="animate-fade-in-up px-6 text-center">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-brand-gradient shadow-glow">
+            <MessageSquare className="h-10 w-10 text-white" />
+          </div>
+          <h3 className="mb-2 font-display text-2xl font-bold text-warm-800 dark:text-warm-50">
             Select a contact to start chatting
           </h3>
-          <p className="text-warm-600 dark:text-slate-300 mb-1">
+          <p className="mb-1 text-warm-600 dark:text-warm-300">
             Search for users in the sidebar
           </p>
-          <p className="text-sm text-warm-500 dark:text-slate-400">
+          <p className="inline-flex items-center gap-1.5 text-sm text-warm-500 dark:text-warm-400">
+            <ShieldCheck className="h-4 w-4 text-primary" />
             All messages are end-to-end encrypted
           </p>
         </div>
@@ -175,20 +178,22 @@ export default function ChatArea() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-warm-50 dark:bg-slate-900">
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+    <div className="flex min-h-0 flex-1 flex-col bg-warm-50 dark:bg-ink-950">
+      <div className="flex-1 space-y-3 overflow-y-auto p-4 sm:p-6">
         {isLoadingMessages ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-              <p className="text-warm-500 dark:text-slate-300 text-sm">Loading messages...</p>
+              <div className="mx-auto mb-3 h-9 w-9 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
+              <p className="text-sm text-warm-500 dark:text-warm-300">Loading messages...</p>
             </div>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <Lock className="w-12 h-12 text-warm-300 dark:text-slate-600 mx-auto mb-3" />
-              <p className="text-warm-600 dark:text-slate-300 text-sm">
+          <div className="flex h-full items-center justify-center">
+            <div className="animate-fade-in text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sage-100 dark:bg-ink-700">
+                <Lock className="h-8 w-8 text-primary/70" />
+              </div>
+              <p className="text-sm text-warm-600 dark:text-warm-300">
                 No messages yet. Start a secure conversation!
               </p>
             </div>
@@ -197,23 +202,26 @@ export default function ChatArea() {
           messages.map((msg) => {
             const isOwn = msg.sender_id === user?.id;
             return (
-              <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+              <div
+                key={msg.id}
+                className={`flex animate-pop-in ${isOwn ? 'justify-end' : 'justify-start'}`}
+              >
                 <div
-                  className={`max-w-[70%] ${
+                  className={`max-w-[78%] px-4 py-2.5 sm:max-w-[70%] ${
                     isOwn
-                      ? 'bg-primary dark:bg-amber-500 text-white'
-                      : 'bg-white dark:bg-slate-700 text-warm-800 dark:text-slate-100'
-                  } rounded-2xl px-4 py-3 shadow-sm`}
+                      ? 'rounded-3xl rounded-br-lg bg-brand-gradient text-white shadow-lift'
+                      : 'rounded-3xl rounded-bl-lg border border-sage-100 dark:border-ink-600/60 bg-white dark:bg-ink-800 text-warm-800 dark:text-warm-100 shadow-soft'
+                  }`}
                 >
-                  <div className="flex items-start gap-2 mb-1">
-                    <Lock className="w-3 h-3 mt-1 opacity-50 flex-shrink-0" />
-                    <p className="text-sm break-words">{msg.decrypted_content}</p>
-                  </div>
+                  <p className="break-words text-[15px] leading-relaxed">
+                    {msg.decrypted_content}
+                  </p>
                   <p
-                    className={`text-xs ${
-                      isOwn ? 'text-white/80' : 'text-warm-500 dark:text-slate-300'
-                    } text-right`}
+                    className={`mt-1 flex items-center justify-end gap-1 text-[10px] ${
+                      isOwn ? 'text-white/70' : 'text-warm-400 dark:text-warm-500'
+                    }`}
                   >
+                    <Lock className="h-2.5 w-2.5" />
                     {new Date(msg.created_at).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -227,7 +235,7 @@ export default function ChatArea() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-warm-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4">
+      <div className="border-t border-sage-100 dark:border-ink-700/60 bg-white/70 dark:bg-ink-900/80 p-3 backdrop-blur-xl sm:p-4">
         <form onSubmit={handleSendMessage} className="flex items-center gap-2">
           <input
             type="text"
@@ -240,17 +248,17 @@ export default function ChatArea() {
               }
             }}
             placeholder="Type an encrypted message..."
-            className="flex-1 px-4 py-3 border border-warm-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-amber-500 focus:border-transparent bg-warm-50 dark:bg-slate-700 text-warm-800 dark:text-slate-100"
+            className="input-field rounded-full px-5 py-3"
             disabled={isSending}
             autoFocus
           />
           <button
             type="submit"
             disabled={isSending || !message.trim()}
-            className="px-6 py-3 bg-primary hover:bg-primary-dark dark:bg-amber-500 dark:hover:bg-amber-600 disabled:bg-warm-300 dark:disabled:bg-slate-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 shadow-sm hover:shadow-md"
+            className="btn-primary flex h-12 w-12 flex-shrink-0 items-center justify-center !rounded-full"
+            title="Send"
           >
-            <Send className="w-5 h-5" />
-            <span className="hidden sm:inline">Send</span>
+            <Send className="h-5 w-5 -translate-x-px translate-y-px" />
           </button>
         </form>
       </div>
