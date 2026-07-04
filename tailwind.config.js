@@ -55,8 +55,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Geist', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Instrument Sans"', 'Geist', 'ui-sans-serif', 'sans-serif'],
+        sans: ['Satoshi', 'Geist', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['"Clash Display"', 'Satoshi', 'ui-sans-serif', 'sans-serif'],
         mono: ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
       colors: {
