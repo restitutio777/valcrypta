@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import { useAuthStore } from './stores/auth-store';
-import { getEncryptedPrivateKey } from './lib/storage';
+import { restoreUnlockedKey } from './lib/key-session';
+import SecuritySettingsModal from './components/SecuritySettingsModal';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/Auth/LoginPage';
 import SignupPage from './components/Auth/SignupPage';
@@ -41,12 +42,15 @@ function App() {
           .maybeSingle();
 
         if (userData) {
-          const encryptedPrivateKey = await getEncryptedPrivateKey(session.user.id);
+          setUser(session.user);
 
-          if (encryptedPrivateKey) {
-            setUser(session.user);
-          } else {
-            await supabase.auth.signOut();
+          // Balanced/Comfort levels persist the unlocked key so a page
+          // reload doesn't ask for the password again. If nothing was
+          // persisted (Maximum, or first visit) the unlock screen shows,
+          // which can also restore the key from the encrypted cloud backup.
+          const restored = await restoreUnlockedKey(session.user.id);
+          if (restored) {
+            setKeys(userData.public_key, restored);
           }
         }
       }
@@ -98,6 +102,7 @@ function App() {
     <>
       <ChatLayout />
       <EncryptionInfoModal />
+      <SecuritySettingsModal />
       <Notification />
     </>
   );

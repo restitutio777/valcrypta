@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Search, UserPlus, Lock } from 'lucide-react';
+import { Search, UserPlus, Lock, Info, Moon, Sun, LogOut, Settings2 } from 'lucide-react';
 import { supabase, Database } from '../../lib/supabase';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
+import { clearUnlockedKey } from '../../lib/key-session';
 import ValCryptaLogo from '../ValCryptaLogo';
 
 type UserRow = Database['public']['Tables']['users']['Row'];
@@ -13,9 +14,16 @@ export default function Sidebar() {
   const [searchResults, setSearchResults] = useState<UserRow[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const { contacts, activeContact, setContacts, setActiveContact, addContact } = useChatStore();
-  const { user } = useAuthStore();
-  const { setNotification, toggleSidebar } = useUIStore();
+  const { contacts, activeContact, setContacts, setActiveContact, addContact, clearChat } =
+    useChatStore();
+  const { user, clearAuth } = useAuthStore();
+  const {
+    setNotification,
+    darkMode,
+    toggleDarkMode,
+    setShowEncryptionInfo,
+    setShowSecuritySettings,
+  } = useUIStore();
 
   useEffect(() => {
     if (user) {
@@ -66,7 +74,6 @@ export default function Sidebar() {
         setNotification({ message: 'Failed to search users', type: 'error' });
         setSearchResults([]);
       } else {
-        console.log('Search results:', data);
         setSearchResults(data || []);
       }
     } catch (err) {
@@ -86,9 +93,6 @@ export default function Sidebar() {
       setActiveContact(contact);
       setSearchQuery('');
       setSearchResults([]);
-      if (window.innerWidth < 1024) {
-        toggleSidebar();
-      }
       return;
     }
 
@@ -101,20 +105,55 @@ export default function Sidebar() {
       addContact(contact);
       setActiveContact(contact);
       setNotification({ message: 'Contact added successfully', type: 'success' });
-      if (window.innerWidth < 1024) {
-        toggleSidebar();
-      }
     }
 
     setSearchQuery('');
     setSearchResults([]);
   };
 
+  const handleLogout = async () => {
+    // The encrypted private key stays in IndexedDB on purpose — it may be
+    // the only copy in existence and is protected by the user's password.
+    // Only the *unlocked* session copy is wiped.
+    if (user) {
+      await clearUnlockedKey(user.id);
+    }
+    await supabase.auth.signOut();
+    clearChat();
+    clearAuth();
+  };
+
   return (
     <div className="flex h-full flex-col border-r border-sage-100 dark:border-ink-700/60 bg-white/70 dark:bg-ink-900/80 backdrop-blur-xl">
-      <div className="relative border-b border-sage-100 dark:border-ink-700/60 p-4">
-        <div className="mb-4">
+      <div className="relative border-b border-sage-100 dark:border-ink-700/60 p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+        <div className="mb-4 flex items-center justify-between">
           <ValCryptaLogo size="md" showText={true} />
+          <div className="flex items-center">
+            <button
+              onClick={() => setShowEncryptionInfo(true)}
+              className="btn-ghost-icon"
+              title="How encryption works"
+            >
+              <Info className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setShowSecuritySettings(true)}
+              className="btn-ghost-icon"
+              title="Security level"
+            >
+              <Settings2 className="h-5 w-5" />
+            </button>
+            <button onClick={toggleDarkMode} className="btn-ghost-icon" title="Toggle dark mode">
+              {darkMode ? (
+                <Sun className="h-5 w-5 text-accent-gold" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </button>
+            <button onClick={handleLogout} className="btn-ghost-icon" title="Logout">
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
         </div>
 
         <div className="group relative">
@@ -123,8 +162,8 @@ export default function Sidebar() {
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            placeholder="Search users to start chatting..."
-            className="input-field py-2.5 pl-10 pr-9 text-sm"
+            placeholder="Find people by username…"
+            className="input-field py-3 pl-10 pr-9"
           />
           {isSearching && searchQuery.length >= 2 && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -140,27 +179,27 @@ export default function Sidebar() {
         )}
 
         {searchResults.length > 0 && (
-          <div className="glass-card animate-pop-in absolute left-4 right-4 z-50 mt-2 max-h-64 overflow-y-auto rounded-2xl shadow-lift">
+          <div className="glass-card animate-pop-in absolute left-4 right-4 z-50 mt-2 max-h-72 overflow-y-auto rounded-2xl shadow-lift">
             {searchResults.map((result) => {
               const isAlreadyContact = contacts.find((c) => c.id === result.id);
               return (
                 <button
                   key={result.id}
                   onClick={() => handleAddContact(result)}
-                  className="group flex w-full items-center gap-3 border-b border-sage-100/80 dark:border-ink-700/60 p-3 transition-colors last:border-0 hover:bg-sage-50 dark:hover:bg-ink-700/60"
+                  className="group flex w-full items-center gap-3 border-b border-sage-100/80 dark:border-ink-700/60 p-3.5 transition-colors last:border-0 hover:bg-sage-50 dark:hover:bg-ink-700/60"
                 >
-                  <div className="avatar-disc h-10 w-10 text-sm">
+                  <div className="avatar-disc h-11 w-11 text-sm">
                     {result.username[0].toUpperCase()}
                   </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-semibold text-warm-800 dark:text-warm-50">
+                  <div className="min-w-0 flex-1 text-left">
+                    <p className="truncate font-semibold text-warm-800 dark:text-warm-50">
                       {result.username}
                     </p>
-                    <p className="text-xs text-warm-500 dark:text-warm-300">
-                      {isAlreadyContact ? 'Already connected' : result.email}
+                    <p className="truncate text-xs text-warm-500 dark:text-warm-300">
+                      {isAlreadyContact ? 'Already connected — tap to open' : 'Tap to start chatting'}
                     </p>
                   </div>
-                  <UserPlus className="h-4 w-4 text-warm-400 transition-all duration-200 group-hover:scale-110 group-hover:text-primary" />
+                  <UserPlus className="h-5 w-5 flex-shrink-0 text-warm-400 transition-all duration-200 group-hover:scale-110 group-hover:text-primary" />
                 </button>
               );
             })}
@@ -170,15 +209,16 @@ export default function Sidebar() {
 
       <div className="flex-1 overflow-y-auto p-2">
         {contacts.length === 0 ? (
-          <div className="p-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sage-100 dark:bg-ink-700">
+          <div className="flex h-full flex-col items-center justify-center p-8 text-center">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sage-100 dark:bg-ink-700">
               <UserPlus className="h-8 w-8 text-primary/70" />
             </div>
-            <p className="mb-2 text-sm font-semibold text-warm-700 dark:text-warm-100">
-              Add your first contact
+            <p className="mb-2 font-display font-semibold text-warm-700 dark:text-warm-100">
+              Start your first chat
             </p>
-            <p className="text-xs leading-relaxed text-warm-500 dark:text-warm-300">
-              Search by username above to start chatting securely
+            <p className="max-w-[16rem] text-sm leading-relaxed text-warm-500 dark:text-warm-300">
+              Type a username in the search box above — one tap connects you, end-to-end
+              encrypted.
             </p>
           </div>
         ) : (
@@ -188,16 +228,11 @@ export default function Sidebar() {
               return (
                 <button
                   key={contact.id}
-                  onClick={() => {
-                    setActiveContact(contact);
-                    if (window.innerWidth < 1024) {
-                      toggleSidebar();
-                    }
-                  }}
+                  onClick={() => setActiveContact(contact)}
                   className={`relative flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-all duration-200 ${
                     isActive
                       ? 'bg-sage-100/90 dark:bg-ink-700 shadow-soft'
-                      : 'hover:bg-sage-50 dark:hover:bg-ink-800'
+                      : 'hover:bg-sage-50 dark:hover:bg-ink-800 active:bg-sage-100 dark:active:bg-ink-700'
                   }`}
                 >
                   {isActive && (
@@ -208,7 +243,7 @@ export default function Sidebar() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`truncate font-semibold ${
+                      className={`truncate text-base font-semibold ${
                         isActive
                           ? 'text-primary-dark dark:text-primary-light'
                           : 'text-warm-800 dark:text-warm-50'
@@ -216,7 +251,7 @@ export default function Sidebar() {
                     >
                       {contact.username}
                     </p>
-                    <p className="flex items-center gap-1 truncate text-xs text-warm-500 dark:text-warm-300">
+                    <p className="flex items-center gap-1 truncate text-sm text-warm-500 dark:text-warm-300">
                       <Lock className="h-3 w-3 text-primary/60" />
                       Encrypted chat
                     </p>

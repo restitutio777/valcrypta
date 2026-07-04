@@ -20,11 +20,17 @@ supabase db push
 
 ## What the Database Setup Does
 
-The SQL script creates three tables with Row Level Security enabled:
+The SQL script creates four tables with Row Level Security enabled:
 
 1. **users** - Stores user profiles with public encryption keys
 2. **messages** - Stores encrypted messages
 3. **contacts** - Manages user contact lists
+4. **key_backups** - Optional password-encrypted private-key backups
+   (used by the Balanced/Comfort security levels; only the owner can
+   read their row, and the blob is encrypted client-side before upload)
+
+> Already ran an older `init.sql`? Apply just the new table by running
+> `supabase/migrations/20260704090000_add_key_backups.sql` in the SQL editor.
 
 All tables have proper RLS policies to ensure:
 - Users can only view their own messages

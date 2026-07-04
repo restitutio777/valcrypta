@@ -11,9 +11,9 @@ export default {
       colors: {
         // Primary brand identity — a luminous emerald-sage
         primary: {
-          DEFAULT: '#4f9d6f',
-          light: '#7bbf95',
-          dark: '#327a52',
+          DEFAULT: '#1f8a5d',
+          light: '#5cb98c',
+          dark: '#136b46',
         },
         secondary: {
           DEFAULT: '#D4CFC0',
@@ -21,12 +21,12 @@ export default {
           dark: '#C0BCB0',
         },
         accent: {
-          DEFAULT: '#3fbfa0',
-          gold: '#d9b877',
+          DEFAULT: '#2fb59b',
+          gold: '#c9a962',
         },
         // Warm cream neutrals (light surfaces)
         warm: {
-          50: '#F7F5EF',
+          50: '#FAF8F2',
           100: '#EDE9DF',
           200: '#DBD5C6',
           300: '#C4BDAB',
@@ -43,47 +43,47 @@ export default {
           100: '#D6EADD',
           200: '#AFD6BE',
           300: '#82BF9B',
-          400: '#5EA97C',
-          500: '#4f9d6f',
-          600: '#327a52',
-          700: '#265d3f',
-          800: '#1B4230',
-          900: '#122c20',
+          400: '#4FA57A',
+          500: '#1f8a5d',
+          600: '#136b46',
+          700: '#0f5236',
+          800: '#0b3d28',
+          900: '#082c1d',
         },
         // Deep forest-charcoal ink (dark surfaces)
         ink: {
-          950: '#0a110d',
-          900: '#0e1712',
-          850: '#131e17',
-          800: '#18261d',
-          700: '#213328',
-          600: '#2f4636',
-          500: '#3f5c47',
+          950: '#070d0a',
+          900: '#0b130e',
+          850: '#0f1912',
+          800: '#142117',
+          700: '#1c2e21',
+          600: '#2a412f',
+          500: '#3a5641',
         },
         // Dark-mode surfaces route through the same forest-ink ramp so the
         // existing `slate-*` classes stay on-brand.
         slate: {
-          700: '#213328',
-          800: '#131e17',
-          850: '#0e1712',
-          900: '#0a110d',
+          700: '#1c2e21',
+          800: '#0f1912',
+          850: '#0b130e',
+          900: '#070d0a',
         },
         amber: {
-          400: '#e6c987',
-          500: '#d9b877',
-          600: '#c4a25e',
+          400: '#dcc07e',
+          500: '#c9a962',
+          600: '#b3924e',
         },
-        dark: '#0a110d',
+        dark: '#070d0a',
       },
       boxShadow: {
         soft: '0 2px 8px -2px rgba(24, 40, 30, 0.08), 0 4px 20px -4px rgba(24, 40, 30, 0.08)',
         lift: '0 10px 30px -10px rgba(24, 50, 34, 0.25), 0 2px 8px -2px rgba(24, 50, 34, 0.12)',
-        glow: '0 0 0 1px rgba(79, 157, 111, 0.15), 0 12px 40px -12px rgba(79, 157, 111, 0.45)',
-        'glow-lg': '0 20px 70px -20px rgba(79, 157, 111, 0.55)',
+        glow: '0 0 0 1px rgba(31, 138, 93, 0.18), 0 12px 40px -12px rgba(31, 138, 93, 0.45)',
+        'glow-lg': '0 20px 70px -20px rgba(31, 138, 93, 0.55)',
       },
       backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #5eb082 0%, #4f9d6f 45%, #327a52 100%)',
-        'brand-sheen': 'linear-gradient(135deg, #7bbf95 0%, #4f9d6f 40%, #3fbfa0 100%)',
+        'brand-gradient': 'linear-gradient(135deg, #2fa374 0%, #1f8a5d 45%, #0f6b47 100%)',
+        'brand-sheen': 'linear-gradient(135deg, #5cb98c 0%, #1f8a5d 40%, #2fb59b 100%)',
       },
       keyframes: {
         'slide-in': {
