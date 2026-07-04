@@ -1,3 +1,149 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-warm-50 text-warm-800;
+  }
+
+  .dark body {
+    @apply bg-ink-950 text-warm-100;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: rgba(79, 157, 111, 0.3);
+  }
+
+  /* Slim, on-brand scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(79, 157, 111, 0.35) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgba(79, 157, 111, 0.35);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(79, 157, 111, 0.55);
+  }
+}
+
+@layer components {
+  /* Ambient aurora backdrop shared by landing / auth / empty states */
+  .aurora-bg {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .aurora-bg::before,
+  .aurora-bg::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    border-radius: 9999px;
+    filter: blur(90px);
+    pointer-events: none;
+  }
+  .aurora-bg::before {
+    width: 42rem;
+    height: 42rem;
+    top: -14rem;
+    left: -10rem;
+    background: radial-gradient(
+      circle at center,
+      rgba(94, 176, 130, 0.35),
+      rgba(94, 176, 130, 0) 70%
+    );
+    animation: float-slow 16s ease-in-out infinite;
+  }
+  .aurora-bg::after {
+    width: 38rem;
+    height: 38rem;
+    bottom: -12rem;
+    right: -8rem;
+    background: radial-gradient(
+      circle at center,
+      rgba(63, 191, 160, 0.28),
+      rgba(63, 191, 160, 0) 70%
+    );
+    animation: float-slow 20s ease-in-out infinite reverse;
+  }
+  .dark .aurora-bg::before {
+    background: radial-gradient(
+      circle at center,
+      rgba(79, 157, 111, 0.22),
+      rgba(79, 157, 111, 0) 70%
+    );
+  }
+  .dark .aurora-bg::after {
+    background: radial-gradient(
+      circle at center,
+      rgba(63, 191, 160, 0.16),
+      rgba(63, 191, 160, 0) 70%
+    );
+  }
+
+  /* Frosted-glass card */
+  .glass-card {
+    @apply bg-white/80 dark:bg-ink-850/80 backdrop-blur-xl border border-white/60 dark:border-ink-600/40;
+  }
+
+  /* Primary CTA button */
+  .btn-primary {
+    @apply relative overflow-hidden bg-brand-gradient text-white font-semibold rounded-xl
+      shadow-glow transition-all duration-300
+      hover:shadow-glow-lg hover:-translate-y-0.5
+      active:translate-y-0 active:shadow-glow
+      disabled:opacity-50 disabled:pointer-events-none;
+    background-size: 150% 150%;
+  }
+  .btn-primary:hover {
+    animation: gradient-pan 3s ease infinite;
+  }
+
+  /* Text input */
+  .input-field {
+    @apply w-full rounded-xl border border-warm-200 dark:border-ink-600
+      bg-white/70 dark:bg-ink-800/70 backdrop-blur-sm
+      text-warm-800 dark:text-warm-100 placeholder-warm-400 dark:placeholder-ink-500
+      transition-all duration-200
+      focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary/50
+      focus:bg-white dark:focus:bg-ink-800;
+  }
+
+  /* Icon-only ghost button */
+  .btn-ghost-icon {
+    @apply p-2 rounded-xl text-warm-500 dark:text-warm-300 transition-all duration-200
+      hover:bg-sage-100/80 dark:hover:bg-ink-700 hover:text-primary-dark dark:hover:text-primary-light
+      hover:scale-105 active:scale-95;
+  }
+
+  /* Gradient avatar disc */
+  .avatar-disc {
+    @apply rounded-full bg-brand-gradient text-white font-semibold
+      flex items-center justify-center shadow-lift
+      ring-2 ring-white/70 dark:ring-ink-600/60;
+  }
+}

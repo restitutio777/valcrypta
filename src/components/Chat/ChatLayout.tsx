@@ -17,32 +17,32 @@ export default function ChatLayout() {
   }, [darkMode]);
 
   return (
-    <div className="flex h-screen bg-warm-100 dark:bg-slate-900">
+    <div className="flex h-screen bg-warm-50 dark:bg-ink-950">
       <div
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-80 transition-transform duration-300`}
+        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-80 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
       >
         <Sidebar />
       </div>
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+          className="fixed inset-0 z-20 bg-ink-950/60 backdrop-blur-sm lg:hidden"
           onClick={toggleSidebar}
         />
       )}
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
         <ChatArea />
       </div>
 
       <button
         onClick={toggleSidebar}
-        className="lg:hidden fixed top-4 left-4 z-40 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary-dark transition-colors"
+        className="btn-primary fixed left-3 top-3 z-40 flex h-10 w-10 items-center justify-center !rounded-full lg:hidden"
       >
-        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
     </div>
   );

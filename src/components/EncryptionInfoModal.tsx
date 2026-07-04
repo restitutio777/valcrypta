@@ -7,30 +7,33 @@ export default function EncryptionInfoModal() {
   if (!showEncryptionInfo) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-sage-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-warm-200 dark:border-sage-700">
-        <div className="sticky top-0 bg-white dark:bg-sage-800 border-b border-warm-200 dark:border-sage-700 p-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-warm-800 dark:text-warm-50">
+    <div
+      className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-ink-950/60 p-4 backdrop-blur-sm"
+      onClick={() => setShowEncryptionInfo(false)}
+    >
+      <div
+        className="glass-card max-h-[90vh] w-full max-w-2xl animate-scale-in overflow-y-auto rounded-3xl shadow-lift"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-sage-100 dark:border-ink-700/60 bg-white/85 dark:bg-ink-850/85 p-6 backdrop-blur-xl">
+          <h2 className="font-display text-2xl font-bold text-warm-800 dark:text-warm-50">
             How End-to-End Encryption Works
           </h2>
-          <button
-            onClick={() => setShowEncryptionInfo(false)}
-            className="p-2 hover:bg-warm-100 dark:hover:bg-sage-700 rounded-lg transition-colors"
-          >
-            <X className="w-6 h-6 text-warm-600 dark:text-warm-300" />
+          <button onClick={() => setShowEncryptionInfo(false)} className="btn-ghost-icon">
+            <X className="h-6 w-6" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="space-y-6 p-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center flex-shrink-0">
-              <Lock className="w-6 h-6 text-primary dark:text-primary-light" />
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-gradient shadow-glow">
+              <Lock className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-warm-800 dark:text-warm-50 mb-2">
+              <h3 className="mb-2 font-display text-lg font-semibold text-warm-800 dark:text-warm-50">
                 Your Messages Are Private
               </h3>
-              <p className="text-warm-600 dark:text-warm-300">
+              <p className="leading-relaxed text-warm-600 dark:text-warm-300">
                 ValCrypta uses end-to-end encryption, which means only you and the person
                 you're chatting with can read your messages. Not even we can access them.
               </p>
@@ -38,26 +41,26 @@ export default function EncryptionInfoModal() {
           </div>
 
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-accent/20 dark:bg-accent/30 flex items-center justify-center flex-shrink-0">
-              <Key className="w-6 h-6 text-accent dark:text-accent" />
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-primary shadow-glow">
+              <Key className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-warm-800 dark:text-warm-50 mb-2">
+              <h3 className="mb-2 font-display text-lg font-semibold text-warm-800 dark:text-warm-50">
                 How It Works
               </h3>
-              <p className="text-slate-600 dark:text-slate-400 mb-3">
+              <p className="mb-3 leading-relaxed text-warm-600 dark:text-warm-300">
                 When you sign up, a unique pair of encryption keys is created on your device:
               </p>
               <ul className="space-y-2 text-warm-600 dark:text-warm-300">
                 <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-warm-400 mt-2 flex-shrink-0" />
+                  <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
                   <span>
                     <strong>Public Key:</strong> Shared with others to encrypt messages sent
                     to you
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-warm-400 mt-2 flex-shrink-0" />
+                  <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
                   <span>
                     <strong>Private Key:</strong> Stored securely on your device, encrypted
                     with your password. Only you can decrypt messages.
@@ -68,33 +71,33 @@ export default function EncryptionInfoModal() {
           </div>
 
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-accent-gold/20 dark:bg-accent-gold/30 flex items-center justify-center flex-shrink-0">
-              <Shield className="w-6 h-6 text-accent-gold dark:text-accent-gold" />
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-gold to-amber-600 shadow-lift">
+              <Shield className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-warm-800 dark:text-warm-50 mb-2">
+              <h3 className="mb-2 font-display text-lg font-semibold text-warm-800 dark:text-warm-50">
                 Important Security Information
               </h3>
               <ul className="space-y-2 text-warm-600 dark:text-warm-300">
                 <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-warm-400 mt-2 flex-shrink-0" />
+                  <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
                   <span>
                     Messages are encrypted on your device <strong>before</strong> being sent
                     to the server
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-warm-400 mt-2 flex-shrink-0" />
+                  <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
                   <span>The server only stores encrypted data that cannot be read</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-warm-400 mt-2 flex-shrink-0" />
+                  <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
                   <span>
                     If you lose your password, your messages <strong>cannot be recovered</strong>
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-warm-400 mt-2 flex-shrink-0" />
+                  <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
                   <span>
                     Your private key never leaves your device and is encrypted with your
                     password
@@ -104,11 +107,11 @@ export default function EncryptionInfoModal() {
             </div>
           </div>
 
-          <div className="bg-accent/10 dark:bg-accent/20 border border-accent/30 dark:border-accent/40 rounded-lg p-4">
-            <h4 className="font-semibold text-warm-800 dark:text-warm-100 mb-2">
+          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-sage-50 to-sage-100/50 dark:from-ink-800 dark:to-ink-700/50 p-5">
+            <h4 className="mb-2 font-display font-semibold text-warm-800 dark:text-warm-100">
               Technical Details
             </h4>
-            <p className="text-sm text-warm-700 dark:text-warm-200">
+            <p className="text-sm leading-relaxed text-warm-600 dark:text-warm-200">
               ValCrypta encrypts each message with a fresh AES-GCM 256-bit key, which is
               then wrapped with RSA-OAEP 2048-bit for both the recipient and the sender.
               Your private key is protected with AES-GCM 256-bit encryption derived from

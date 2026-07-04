@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, UserPlus } from 'lucide-react';
+import { Search, UserPlus, Lock } from 'lucide-react';
 import { supabase, Database } from '../../lib/supabase';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
@@ -111,58 +111,56 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="h-full bg-warm-50 dark:bg-slate-800 border-r border-warm-200 dark:border-slate-700 flex flex-col">
-      <div className="p-4 border-b border-warm-200 dark:border-slate-700 relative">
+    <div className="flex h-full flex-col border-r border-sage-100 dark:border-ink-700/60 bg-white/70 dark:bg-ink-900/80 backdrop-blur-xl">
+      <div className="relative border-b border-sage-100 dark:border-ink-700/60 p-4">
         <div className="mb-4">
           <ValCryptaLogo size="md" showText={true} />
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-warm-400" />
+        <div className="group relative">
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Search users to start chatting..."
-            className="w-full pl-10 pr-4 py-2 border border-warm-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary dark:focus:ring-amber-500 focus:border-transparent bg-white dark:bg-slate-700 text-warm-800 dark:text-slate-100 text-sm"
+            className="input-field py-2.5 pl-10 pr-9 text-sm"
           />
           {isSearching && searchQuery.length >= 2 && (
-            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           )}
         </div>
 
         {searchQuery.length >= 2 && !isSearching && searchResults.length === 0 && (
-          <div className="absolute left-0 right-0 z-50 mt-2 bg-white dark:bg-slate-700 border border-warm-200 dark:border-slate-600 rounded-lg shadow-lg p-4">
-            <p className="text-sm text-warm-500 dark:text-warm-300 text-center">No users found</p>
+          <div className="glass-card animate-pop-in absolute left-4 right-4 z-50 mt-2 rounded-2xl p-4 shadow-lift">
+            <p className="text-center text-sm text-warm-500 dark:text-warm-300">No users found</p>
           </div>
         )}
 
         {searchResults.length > 0 && (
-          <div className="absolute left-0 right-0 z-50 mt-2 bg-white dark:bg-slate-700 border border-warm-200 dark:border-slate-600 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+          <div className="glass-card animate-pop-in absolute left-4 right-4 z-50 mt-2 max-h-64 overflow-y-auto rounded-2xl shadow-lift">
             {searchResults.map((result) => {
               const isAlreadyContact = contacts.find((c) => c.id === result.id);
               return (
                 <button
                   key={result.id}
                   onClick={() => handleAddContact(result)}
-                  className="w-full p-3 hover:bg-warm-100 dark:hover:bg-slate-600 flex items-center gap-3 border-b border-warm-100 dark:border-slate-600 last:border-0"
+                  className="group flex w-full items-center gap-3 border-b border-sage-100/80 dark:border-ink-700/60 p-3 transition-colors last:border-0 hover:bg-sage-50 dark:hover:bg-ink-700/60"
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                    <span className="text-primary dark:text-primary-light font-semibold">
-                      {result.username[0].toUpperCase()}
-                    </span>
+                  <div className="avatar-disc h-10 w-10 text-sm">
+                    {result.username[0].toUpperCase()}
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="font-medium text-warm-800 dark:text-warm-50">
+                    <p className="font-semibold text-warm-800 dark:text-warm-50">
                       {result.username}
                     </p>
                     <p className="text-xs text-warm-500 dark:text-warm-300">
                       {isAlreadyContact ? 'Already connected' : result.email}
                     </p>
                   </div>
-                  <UserPlus className="w-4 h-4 text-warm-400" />
+                  <UserPlus className="h-4 w-4 text-warm-400 transition-all duration-200 group-hover:scale-110 group-hover:text-primary" />
                 </button>
               );
             })}
@@ -170,48 +168,63 @@ export default function Sidebar() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-2">
         {contacts.length === 0 ? (
           <div className="p-8 text-center">
-            <UserPlus className="w-12 h-12 text-warm-300 dark:text-slate-600 mx-auto mb-3" />
-            <p className="text-warm-600 dark:text-warm-200 text-sm font-medium mb-2">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sage-100 dark:bg-ink-700">
+              <UserPlus className="h-8 w-8 text-primary/70" />
+            </div>
+            <p className="mb-2 text-sm font-semibold text-warm-700 dark:text-warm-100">
               Add your first contact
             </p>
-            <p className="text-warm-500 dark:text-warm-300 text-xs">
+            <p className="text-xs leading-relaxed text-warm-500 dark:text-warm-300">
               Search by username above to start chatting securely
             </p>
           </div>
         ) : (
-          contacts.map((contact) => (
-            <button
-              key={contact.id}
-              onClick={() => {
-                setActiveContact(contact);
-                if (window.innerWidth < 1024) {
-                  toggleSidebar();
-                }
-              }}
-              className={`w-full p-4 flex items-center gap-3 hover:bg-warm-100 dark:hover:bg-slate-700 transition-colors border-b border-warm-100 dark:border-slate-700 ${
-                activeContact?.id === contact.id
-                  ? 'bg-primary/10 dark:bg-slate-700/50'
-                  : ''
-              }`}
-            >
-              <div className="w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-primary dark:text-primary-light font-semibold text-lg">
-                  {contact.username[0].toUpperCase()}
-                </span>
-              </div>
-              <div className="flex-1 text-left min-w-0">
-                <p className="font-medium text-warm-800 dark:text-warm-50 truncate">
-                  {contact.username}
-                </p>
-                <p className="text-sm text-warm-500 dark:text-warm-300 truncate">
-                  Encrypted chat
-                </p>
-              </div>
-            </button>
-          ))
+          <div className="space-y-1">
+            {contacts.map((contact) => {
+              const isActive = activeContact?.id === contact.id;
+              return (
+                <button
+                  key={contact.id}
+                  onClick={() => {
+                    setActiveContact(contact);
+                    if (window.innerWidth < 1024) {
+                      toggleSidebar();
+                    }
+                  }}
+                  className={`relative flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-all duration-200 ${
+                    isActive
+                      ? 'bg-sage-100/90 dark:bg-ink-700 shadow-soft'
+                      : 'hover:bg-sage-50 dark:hover:bg-ink-800'
+                  }`}
+                >
+                  {isActive && (
+                    <span className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-brand-gradient" />
+                  )}
+                  <div className="avatar-disc h-12 w-12 flex-shrink-0 text-lg">
+                    {contact.username[0].toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`truncate font-semibold ${
+                        isActive
+                          ? 'text-primary-dark dark:text-primary-light'
+                          : 'text-warm-800 dark:text-warm-50'
+                      }`}
+                    >
+                      {contact.username}
+                    </p>
+                    <p className="flex items-center gap-1 truncate text-xs text-warm-500 dark:text-warm-300">
+                      <Lock className="h-3 w-3 text-primary/60" />
+                      Encrypted chat
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>
