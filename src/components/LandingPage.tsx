@@ -65,6 +65,12 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           className="haze-wash animate-float-slow h-[28rem] w-[28rem] -right-32 top-40 bg-porcelain-300/50 dark:bg-ink-600/30"
           style={{ animationDirection: 'reverse', animationDuration: '20s' }}
         />
+        {/* Warm dawn note so the haze isn't purely cool. */}
+        <div
+          aria-hidden
+          className="haze-wash animate-float-slow left-1/2 top-56 h-[22rem] w-[22rem] -translate-x-1/2 bg-brass-300/20 dark:bg-brass-500/10"
+          style={{ animationDuration: '26s' }}
+        />
         <MistHills />
 
         <div className="relative z-10">
@@ -89,11 +95,11 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
                 </span>
               </span>
 
-              <h1 className="mt-8 animate-fade-in-up font-display font-semibold leading-[0.98] tracking-[-0.035em] text-porcelain-900 dark:text-porcelain-100 [font-size:clamp(3rem,8.5vw,6rem)]">
+              <h1 className="mt-8 animate-fade-in-up font-display font-semibold leading-[1.02] tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 [font-size:clamp(3rem,8.5vw,6rem)]">
                 {landing.heroLine1}
                 <br />
                 {landing.heroLine2Pre}
-                <em className="font-medium italic">{landing.heroEmphasis}</em>
+                <span className="text-gradient-brass">{landing.heroEmphasis}</span>
               </h1>
 
               <p
@@ -140,21 +146,24 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       {/* Wie ValCrypta funktioniert — typographic, numbered, no icons       */}
       {/* ---------------------------------------------------------------- */}
       <section className="container mx-auto max-w-3xl px-6 py-20 md:py-28">
-        <h2 className="font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+        <span className="spec-label">Protokoll</span>
+        <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
           {landing.how.title}
         </h2>
-        <div className="mt-10">
+        <div className="mt-12">
           {landing.how.steps.map(({ num, claim, body }) => (
             <div
               key={num}
-              className="hairline grid grid-cols-[3.5rem_1fr] gap-5 border-t py-10 md:gap-8"
+              className="hairline grid grid-cols-[4.5rem_1fr] gap-5 border-t py-9 md:grid-cols-[5.5rem_1fr] md:gap-8"
             >
-              <span className="spec-label pt-2">{num}</span>
+              <span className="text-gradient-brass font-display text-4xl font-semibold leading-none md:text-5xl">
+                {num}
+              </span>
               <div>
                 <h3 className="font-display text-2xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-3xl">
                   {claim}
                 </h3>
-                <p className="mt-3 leading-relaxed text-porcelain-600 dark:text-porcelain-300">
+                <p className="mt-3 max-w-xl leading-relaxed text-porcelain-600 dark:text-porcelain-300">
                   {body}
                 </p>
               </div>
@@ -166,38 +175,63 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       {/* ---------------------------------------------------------------- */}
       {/* Was wir speichern — und was nicht                                  */}
       {/* ---------------------------------------------------------------- */}
-      <section className="bg-mist-50 dark:bg-ink-900/60">
-        <div className="container mx-auto max-w-4xl px-6 py-20 md:py-28">
-          <h2 className="text-center font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
-            {landing.storage.title}
-          </h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
-            <div className="glass-card rounded-3xl p-8">
-              <h3 className="spec-label">{landing.storage.weStore.title}</h3>
-              <ul className="mt-5">
-                {landing.storage.weStore.items.map((item) => (
-                  <li
-                    key={item}
-                    className="hairline border-t py-3.5 text-porcelain-700 dark:text-porcelain-200"
-                  >
-                    {item}
-                  </li>
+      <section className="container mx-auto max-w-5xl px-4 py-16 sm:px-6 md:py-24">
+        <div className="gradient-ring rounded-[2rem] shadow-lift">
+          <div className="dusk-panel grain rounded-[calc(2rem-1px)] px-6 py-12 sm:px-10 md:px-14 md:py-16">
+            <div className="relative z-10">
+              <span className="spec-label !text-brass-300">{landing.storage.kicker}</span>
+              <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-50 md:text-4xl">
+                {landing.storage.title}
+              </h2>
+              <p className="mt-3 text-porcelain-400">{landing.storage.sub}</p>
+
+              <div className="mt-10 grid gap-10 md:grid-cols-[1fr_auto_1fr] md:gap-12">
+                <div>
+                  <h3 className="spec-label !text-brass-300">{landing.storage.weStore.title}</h3>
+                  <ul className="mt-4">
+                    {landing.storage.weStore.items.map((item, i) => (
+                      <li
+                        key={item}
+                        className="grid grid-cols-[2.5rem_1fr] items-baseline border-t border-white/10 py-4"
+                      >
+                        <span className="font-mono text-[11px] text-brass-300/80">
+                          {String(i + 1).padStart(2, '0')}
+                        </span>
+                        <span className="text-lg text-porcelain-100">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div aria-hidden className="gradient-rule-y hidden md:block" />
+
+                <div>
+                  <h3 className="spec-label !text-porcelain-500">
+                    {landing.storage.weDont.title}
+                  </h3>
+                  <ul className="mt-4">
+                    {landing.storage.weDont.items.map((item) => (
+                      <li
+                        key={item}
+                        className="grid grid-cols-[2.5rem_1fr] items-baseline border-t border-white/[0.06] py-4"
+                      >
+                        <span className="font-mono text-[11px] text-porcelain-600">—</span>
+                        <span className="text-lg text-porcelain-500 line-through decoration-porcelain-600/60 decoration-1">
+                          {item}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-white/10 pt-6">
+                {landing.specs.map((s) => (
+                  <span key={s} className="spec-label !text-porcelain-500">
+                    {s}
+                  </span>
                 ))}
-              </ul>
-            </div>
-            <div className="glass-card rounded-3xl p-8">
-              <h3 className="spec-label">{landing.storage.weDont.title}</h3>
-              <ul className="mt-5">
-                {landing.storage.weDont.items.map((item) => (
-                  <li
-                    key={item}
-                    className="hairline border-t py-3.5 text-porcelain-500 dark:text-porcelain-400"
-                  >
-                    <span className="mr-2 text-porcelain-400 dark:text-porcelain-600">—</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              </div>
             </div>
           </div>
         </div>
@@ -208,8 +242,10 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       {/* ---------------------------------------------------------------- */}
       <section className="aurora-bg">
         <div className="container mx-auto px-6 py-24 text-center md:py-32">
-          <p className="mx-auto max-w-2xl font-display text-3xl font-medium italic leading-snug tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-5xl">
-            {landing.finalCta.line}
+          <p className="mx-auto max-w-2xl font-display text-3xl font-semibold leading-snug tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-5xl">
+            {landing.finalCta.pre}
+            <span className="text-gradient-brass">{landing.finalCta.emphasis}</span>
+            {landing.finalCta.post}
           </p>
           <button
             onClick={onGetStarted}

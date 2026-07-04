@@ -12,7 +12,7 @@ export const landing = {
   kicker: 'Ende-zu-Ende-verschlüsselter Messenger',
   heroLine1: 'Nachrichten,',
   heroLine2Pre: 'die niemand ',
-  heroEmphasis: 'mitliest.', // set in display italic
+  heroEmphasis: 'mitliest.', // set in gradient display ink
   heroSub:
     'ValCrypta verschlüsselt jede Nachricht auf deinem Gerät. ' +
     'Der Server speichert nur Chiffretext.',
@@ -40,7 +40,9 @@ export const landing = {
   },
   specs: ['AES-256-GCM', 'RSA-OAEP-2048', 'PBKDF2 · 100.000', 'Zero-Knowledge'],
   storage: {
+    kicker: 'Datenbilanz',
     title: 'Was wir speichern — und was nicht',
+    sub: 'Die vollständige Liste. Es gibt keine zweite.',
     weStore: {
       title: 'Wir speichern',
       items: ['E-Mail-Adresse', 'Nutzername', 'Öffentlicher Schlüssel', 'Chiffretext'],
@@ -50,7 +52,12 @@ export const landing = {
       items: ['Klartext deiner Nachrichten', 'Private Schlüssel', 'Metadaten-Profile', 'Werbedaten'],
     },
   },
-  finalCta: { line: 'Ein Gespräch, das privat bleibt.', button: 'Konto erstellen' },
+  finalCta: {
+    pre: 'Ein Gespräch, das ',
+    emphasis: 'privat',
+    post: ' bleibt.',
+    button: 'Konto erstellen',
+  },
   footerLegal: '© 2026 ValCrypta',
 } as const;
 
