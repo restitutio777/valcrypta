@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Lock, Mail, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import ValCryptaLogo from '../ValCryptaLogo';
 import { supabase } from '../../lib/supabase';
-import { getEncryptedPrivateKey } from '../../lib/storage';
+import { getEncryptedPrivateKey, storeEncryptedPrivateKey } from '../../lib/storage';
 import { decryptPrivateKey, importPrivateKey } from '../../lib/crypto';
+import { fetchKeyBackup, uploadKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
+import { useUIStore } from '../../stores/ui-store';
 
 interface LoginPageProps {
   onSwitchToSignup: () => void;
@@ -18,6 +20,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
   const [error, setError] = useState('');
 
   const { setUser, setKeys } = useAuthStore();
+  const { securityLevel } = useUIStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,14 +46,34 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
       if (userError) throw userError;
       if (!userData) throw new Error('User profile not found');
 
-      const encryptedPrivateKey = await getEncryptedPrivateKey(authData.user.id);
+      // Prefer the key stored on this device; fall back to the encrypted
+      // cloud backup so signing in on a new device just works.
+      let encryptedPrivateKey = await getEncryptedPrivateKey(authData.user.id);
+      let restoredFromCloud = false;
 
       if (!encryptedPrivateKey) {
-        throw new Error('Private key not found. Please contact support.');
+        encryptedPrivateKey = await fetchKeyBackup(authData.user.id);
+        restoredFromCloud = !!encryptedPrivateKey;
+      }
+
+      if (!encryptedPrivateKey) {
+        throw new Error(
+          'No key found for this account on this device, and no cloud backup exists. ' +
+            'Sign in on your original device and enable a backup in Security Settings.'
+        );
       }
 
       const privateKeyString = await decryptPrivateKey(encryptedPrivateKey, password);
       const privateKey = await importPrivateKey(privateKeyString);
+
+      if (restoredFromCloud) {
+        await storeEncryptedPrivateKey(authData.user.id, encryptedPrivateKey);
+      } else if (securityLevel !== 'maximum') {
+        // Keep the backup fresh for accounts that opted into it.
+        uploadKeyBackup(authData.user.id, encryptedPrivateKey);
+      }
+
+      await persistUnlockedKey(authData.user.id, privateKey, securityLevel);
 
       setUser(authData.user);
       setKeys(userData.public_key, privateKey);

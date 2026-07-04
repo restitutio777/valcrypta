@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Lock, Eye, EyeOff, LogOut, KeyRound } from 'lucide-react';
 import ValCryptaLogo from '../ValCryptaLogo';
 import { supabase } from '../../lib/supabase';
-import { getEncryptedPrivateKey } from '../../lib/storage';
+import { getEncryptedPrivateKey, storeEncryptedPrivateKey } from '../../lib/storage';
 import { decryptPrivateKey, importPrivateKey } from '../../lib/crypto';
+import { fetchKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
+import { useUIStore } from '../../stores/ui-store';
 
 export default function UnlockPage() {
   const [password, setPassword] = useState('');
@@ -13,6 +15,7 @@ export default function UnlockPage() {
   const [error, setError] = useState('');
 
   const { user, setKeys, clearAuth } = useAuthStore();
+  const { securityLevel } = useUIStore();
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,13 +24,24 @@ export default function UnlockPage() {
     setIsLoading(true);
 
     try {
-      const encryptedPrivateKey = await getEncryptedPrivateKey(user.id);
+      let encryptedPrivateKey = await getEncryptedPrivateKey(user.id);
+      let restoredFromCloud = false;
+
+      if (!encryptedPrivateKey) {
+        encryptedPrivateKey = await fetchKeyBackup(user.id);
+        restoredFromCloud = !!encryptedPrivateKey;
+      }
+
       if (!encryptedPrivateKey) {
         throw new Error('Private key not found on this device. Please log in again.');
       }
 
       const privateKeyString = await decryptPrivateKey(encryptedPrivateKey, password);
       const privateKey = await importPrivateKey(privateKeyString);
+
+      if (restoredFromCloud) {
+        await storeEncryptedPrivateKey(user.id, encryptedPrivateKey);
+      }
 
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -37,6 +51,8 @@ export default function UnlockPage() {
 
       if (userError) throw userError;
       if (!userData) throw new Error('User profile not found');
+
+      await persistUnlockedKey(user.id, privateKey, securityLevel);
 
       setKeys(userData.public_key, privateKey);
     } catch (err: unknown) {

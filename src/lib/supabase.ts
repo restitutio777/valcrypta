@@ -81,6 +81,23 @@ export type Database = {
           created_at?: string;
         };
       };
+      key_backups: {
+        Row: {
+          user_id: string;
+          encrypted_private_key: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          encrypted_private_key: string;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          encrypted_private_key?: string;
+          updated_at?: string;
+        };
+      };
     };
   };
 };

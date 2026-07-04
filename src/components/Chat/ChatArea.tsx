@@ -213,7 +213,7 @@ export default function ChatArea() {
                       : 'rounded-3xl rounded-bl-lg border border-sage-100 dark:border-ink-600/60 bg-white dark:bg-ink-800 text-warm-800 dark:text-warm-100 shadow-soft'
                   }`}
                 >
-                  <p className="break-words text-[15px] leading-relaxed">
+                  <p className="break-words text-base leading-relaxed">
                     {msg.decrypted_content}
                   </p>
                   <p
@@ -235,7 +235,7 @@ export default function ChatArea() {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-sage-100 dark:border-ink-700/60 bg-white/70 dark:bg-ink-900/80 p-3 backdrop-blur-xl sm:p-4">
+      <div className="safe-bottom border-t border-sage-100 dark:border-ink-700/60 bg-white/70 dark:bg-ink-900/80 p-3 backdrop-blur-xl sm:p-4">
         <form onSubmit={handleSendMessage} className="flex items-center gap-2">
           <input
             type="text"

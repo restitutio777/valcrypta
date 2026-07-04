@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
 import { useUIStore } from '../../stores/ui-store';
+import { useChatStore } from '../../stores/chat-store';
 import Sidebar from './Sidebar';
 import ChatArea from './ChatArea';
 import TopBar from './TopBar';
 
 export default function ChatLayout() {
-  const { sidebarOpen, toggleSidebar, darkMode } = useUIStore();
+  const { darkMode } = useUIStore();
+  const { activeContact } = useChatStore();
 
   useEffect(() => {
     if (darkMode) {
@@ -16,34 +17,27 @@ export default function ChatLayout() {
     }
   }, [darkMode]);
 
+  // Phone-style navigation: on small screens the contact list IS the home
+  // screen and a chat opens full-screen on top of it (back arrow in the
+  // TopBar returns to the list). On lg+ both panes sit side by side.
   return (
-    <div className="flex h-screen bg-warm-50 dark:bg-ink-950">
+    <div className="app-height flex bg-warm-50 dark:bg-ink-950">
       <div
         className={`${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-80 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]`}
+          activeContact ? 'hidden lg:flex' : 'flex'
+        } w-full flex-col lg:w-[22rem] lg:flex-shrink-0`}
       >
         <Sidebar />
       </div>
 
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-ink-950/60 backdrop-blur-sm lg:hidden"
-          onClick={toggleSidebar}
-        />
-      )}
-
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div
+        className={`${
+          activeContact ? 'flex' : 'hidden lg:flex'
+        } min-w-0 flex-1 flex-col`}
+      >
         <TopBar />
         <ChatArea />
       </div>
-
-      <button
-        onClick={toggleSidebar}
-        className="btn-primary fixed left-3 top-3 z-40 flex h-10 w-10 items-center justify-center !rounded-full lg:hidden"
-      >
-        {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </button>
     </div>
   );
 }

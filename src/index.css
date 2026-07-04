@@ -51,6 +51,18 @@
 }
 
 @layer components {
+  /* Full-height app shell that tracks the *visible* viewport on mobile
+     (100vh overflows behind browser chrome / keyboard; dvh does not). */
+  .app-height {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* Keep the composer above the home-indicator / notch areas. */
+  .safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
   /* Ambient aurora backdrop shared by landing / auth / empty states */
   .aurora-bg {
     position: relative;
@@ -123,10 +135,10 @@
     animation: gradient-pan 3s ease infinite;
   }
 
-  /* Text input */
+  /* Text input — 16px base size so iOS Safari never auto-zooms on focus */
   .input-field {
     @apply w-full rounded-xl border border-warm-200 dark:border-ink-600
-      bg-white/70 dark:bg-ink-800/70 backdrop-blur-sm
+      bg-white/70 dark:bg-ink-800/70 backdrop-blur-sm text-base
       text-warm-800 dark:text-warm-100 placeholder-warm-400 dark:placeholder-ink-500
       transition-all duration-200
       focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-primary/50

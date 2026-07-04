@@ -10,7 +10,9 @@ import {
   calculatePasswordStrength,
 } from '../../lib/crypto';
 import { storeEncryptedPrivateKey } from '../../lib/storage';
+import { uploadKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
+import { useUIStore } from '../../stores/ui-store';
 
 interface SignupPageProps {
   onSwitchToLogin: () => void;
@@ -26,6 +28,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   const [error, setError] = useState('');
 
   const { setUser, setKeys } = useAuthStore();
+  const { securityLevel } = useUIStore();
   const passwordStrength = calculatePasswordStrength(password);
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -73,6 +76,14 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
       const encryptedPrivateKey = await encryptPrivateKey(privateKeyString, password);
       await storeEncryptedPrivateKey(authData.user.id, encryptedPrivateKey);
+
+      // Balanced/Comfort (default) keep an encrypted backup server-side so
+      // the account isn't tied to this one device. Fire-and-forget: signup
+      // must not fail if the backup table is missing.
+      if (securityLevel !== 'maximum') {
+        uploadKeyBackup(authData.user.id, encryptedPrivateKey);
+      }
+      await persistUnlockedKey(authData.user.id, keyPair.privateKey, securityLevel);
 
       // Upsert instead of insert: the database has a trigger that creates a
       // placeholder profile row on auth signup, so a plain insert collides.

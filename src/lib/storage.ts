@@ -1,6 +1,9 @@
 const DB_NAME = 'ValCryptaDB';
-const DB_VERSION = 1;
+// v2 adds the 'unlocked_keys' store used by key-session.ts; both modules
+// must open with the same version or IndexedDB rejects the older open.
+const DB_VERSION = 2;
 const STORE_NAME = 'keys';
+const UNLOCKED_STORE = 'unlocked_keys';
 
 function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
@@ -13,6 +16,9 @@ function openDatabase(): Promise<IDBDatabase> {
       const db = (event.target as IDBOpenDBRequest).result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME);
+      }
+      if (!db.objectStoreNames.contains(UNLOCKED_STORE)) {
+        db.createObjectStore(UNLOCKED_STORE);
       }
     };
   });
