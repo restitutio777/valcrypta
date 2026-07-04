@@ -7,6 +7,7 @@ import { decryptPrivateKey, importPrivateKey } from '../../lib/crypto';
 import { fetchKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
+import { common, unlock } from '../../lib/copy';
 
 export default function UnlockPage() {
   const [password, setPassword] = useState('');
@@ -33,7 +34,7 @@ export default function UnlockPage() {
       }
 
       if (!encryptedPrivateKey) {
-        throw new Error('Private key not found on this device. Please log in again.');
+        throw new Error(unlock.errNoKey);
       }
 
       const privateKeyString = await decryptPrivateKey(encryptedPrivateKey, password);
@@ -50,7 +51,7 @@ export default function UnlockPage() {
         .maybeSingle();
 
       if (userError) throw userError;
-      if (!userData) throw new Error('User profile not found');
+      if (!userData) throw new Error(unlock.errNoProfile);
 
       await persistUnlockedKey(user.id, privateKey, securityLevel);
 
@@ -59,9 +60,9 @@ export default function UnlockPage() {
       // AES-GCM decryption fails with an opaque OperationError on a wrong
       // password, so map it to a friendly message.
       if (err instanceof DOMException) {
-        setError('Incorrect password. Please try again.');
+        setError(unlock.errWrongPassword);
       } else {
-        setError(err instanceof Error ? err.message : 'Failed to unlock');
+        setError(err instanceof Error ? err.message : unlock.errGeneric);
       }
     } finally {
       setIsLoading(false);
@@ -74,18 +75,16 @@ export default function UnlockPage() {
   };
 
   return (
-    <div className="aurora-bg min-h-screen bg-gradient-to-br from-warm-50 via-sage-50 to-warm-100 dark:from-ink-950 dark:via-ink-900 dark:to-ink-850 flex items-center justify-center p-4">
-      <div className="glass-card w-full max-w-md rounded-3xl p-8 shadow-lift animate-scale-in">
+    <div className="aurora-bg grain min-h-screen bg-porcelain-100 dark:bg-ink-950 flex items-center justify-center p-4">
+      <div className="glass-card relative z-10 w-full max-w-md rounded-3xl p-8 shadow-lift animate-scale-in">
         <div className="mb-8 text-center">
           <div className="mb-5 flex justify-center">
             <ValCryptaLogo size="lg" showText={false} />
           </div>
-          <h1 className="mb-2 font-display text-3xl font-bold text-warm-800 dark:text-warm-50">
-            Unlock Your Messages
+          <h1 className="mb-2 text-3xl font-semibold text-porcelain-900 dark:text-porcelain-50">
+            {unlock.title}
           </h1>
-          <p className="text-warm-500 dark:text-warm-300">
-            Enter your password to decrypt your private key
-          </p>
+          <p className="text-porcelain-500 dark:text-porcelain-300">{unlock.subtitle}</p>
           {user?.email && (
             <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-sage-200/80 dark:border-ink-600 bg-white/50 dark:bg-ink-800/50 px-3 py-1 text-sm text-warm-600 dark:text-warm-300">
               <KeyRound className="h-3.5 w-3.5 text-primary" />
@@ -97,7 +96,7 @@ export default function UnlockPage() {
         <form onSubmit={handleUnlock} className="space-y-5">
           <div>
             <label className="mb-2 block text-sm font-semibold text-warm-700 dark:text-warm-200">
-              Password
+              {common.password}
             </label>
             <div className="group relative">
               <Lock className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
@@ -127,7 +126,7 @@ export default function UnlockPage() {
           )}
 
           <button type="submit" disabled={isLoading} className="btn-primary w-full py-3.5">
-            {isLoading ? 'Unlocking...' : 'Unlock'}
+            {isLoading ? unlock.submitting : unlock.submit}
           </button>
         </form>
 
@@ -137,7 +136,7 @@ export default function UnlockPage() {
             className="inline-flex items-center gap-2 text-sm text-warm-500 dark:text-warm-300 transition-colors hover:text-warm-800 dark:hover:text-warm-100"
           >
             <LogOut className="h-4 w-4" />
-            Sign out and use a different account
+            {unlock.signOut}
           </button>
         </div>
       </div>

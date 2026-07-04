@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Download, FileText, X, AlertCircle } from 'lucide-react';
 import { downloadFileBytes } from '../../lib/files';
 import { useAuthStore } from '../../stores/auth-store';
+import { chat } from '../../lib/copy';
 
 interface FileMessageProps {
   fileUrl: string;
@@ -96,7 +97,7 @@ export default function FileMessage({
       return (
         <div className="flex items-center gap-2 rounded-2xl bg-black/10 px-3 py-2 text-sm dark:bg-white/10">
           <AlertCircle className="h-4 w-4 text-red-400" />
-          <span>Could not load image</span>
+          <span>{chat.imageError}</span>
         </div>
       );
     }
@@ -114,11 +115,11 @@ export default function FileMessage({
           type="button"
           onClick={() => setShowLightbox(true)}
           className="block overflow-hidden rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/60"
-          title="Open image"
+          title={chat.openImage}
         >
           <img
             src={imageUrl}
-            alt={fileName || 'Encrypted image'}
+            alt={fileName || chat.encryptedFile}
             className="max-h-80 max-w-full rounded-2xl object-cover"
           />
         </button>
@@ -131,13 +132,13 @@ export default function FileMessage({
               type="button"
               className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
               onClick={() => setShowLightbox(false)}
-              title="Close"
+              title={chat.close}
             >
               <X className="h-6 w-6" />
             </button>
             <img
               src={imageUrl}
-              alt={fileName || 'Encrypted image'}
+              alt={fileName || chat.encryptedFile}
               className="max-h-full max-w-full rounded-lg object-contain"
               onClick={(e) => e.stopPropagation()}
             />
@@ -156,13 +157,13 @@ export default function FileMessage({
       className={`glass-card flex min-w-[13rem] max-w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-all hover:-translate-y-0.5 hover:shadow-lift disabled:opacity-60 ${
         isOwn ? 'text-warm-800 dark:text-warm-100' : 'text-warm-800 dark:text-warm-100'
       }`}
-      title="Download file"
+      title={chat.downloadFile}
     >
-      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-brand-gradient text-white shadow-lift">
+      <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-brand-gradient text-porcelain-50 shadow-soft">
         <FileText className="h-5 w-5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium">{fileName || 'Encrypted file'}</span>
+        <span className="block truncate text-sm font-medium">{fileName || chat.encryptedFile}</span>
         <span className="block text-xs text-warm-500 dark:text-warm-400">
           {formatBytes(fileSize)}
         </span>

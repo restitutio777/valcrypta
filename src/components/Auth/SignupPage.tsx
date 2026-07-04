@@ -13,6 +13,7 @@ import { storeEncryptedPrivateKey } from '../../lib/storage';
 import { uploadKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
+import { common, signup } from '../../lib/copy';
 
 interface SignupPageProps {
   onSwitchToLogin: () => void;
@@ -36,17 +37,17 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(signup.errMismatch);
       return;
     }
 
     if (passwordStrength.score < 3) {
-      setError('Password is too weak. Please use a stronger password.');
+      setError(signup.errWeak);
       return;
     }
 
     if (username.length < 3) {
-      setError('Username must be at least 3 characters');
+      setError(signup.errUsername);
       return;
     }
 
@@ -59,7 +60,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       });
 
       if (authError) throw authError;
-      if (!authData.user) throw new Error('Signup failed');
+      if (!authData.user) throw new Error(signup.errFailed);
 
       // Wait a moment for the session to be established
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -67,7 +68,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       // Verify session is established
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) {
-        throw new Error('Session not established. Please try logging in.');
+        throw new Error(signup.errSession);
       }
 
       const keyPair = await generateKeyPair();
@@ -99,14 +100,14 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
       if (profileError) {
         console.error('Profile creation error:', profileError);
-        throw new Error(`Failed to create profile: ${profileError.message}`);
+        throw new Error(`${signup.errProfile}: ${profileError.message}`);
       }
 
       setUser(authData.user);
       setKeys(publicKeyString, keyPair.privateKey);
 
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An error occurred during signup';
+      const message = err instanceof Error ? err.message : signup.errGeneric;
       setError(message);
     } finally {
       setIsLoading(false);
@@ -114,26 +115,24 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   };
 
   return (
-    <div className="aurora-bg min-h-screen bg-gradient-to-br from-sage-50 via-warm-50 to-sage-100 dark:from-ink-950 dark:via-ink-900 dark:to-ink-850 flex items-center justify-center p-4">
-      <div className="glass-card w-full max-w-md rounded-3xl p-8 shadow-lift animate-scale-in">
+    <div className="aurora-bg grain min-h-screen bg-porcelain-100 dark:bg-ink-950 flex items-center justify-center p-4">
+      <div className="glass-card relative z-10 w-full max-w-md rounded-3xl p-8 shadow-lift animate-scale-in">
         <div className="mb-6 text-center">
           <div className="mb-5 flex justify-center">
             <ValCryptaLogo size="lg" showText={false} />
           </div>
-          <h1 className="mb-2 font-display text-3xl font-bold text-warm-800 dark:text-warm-50">
-            Create Account
+          <h1 className="mb-2 text-3xl font-semibold text-porcelain-900 dark:text-porcelain-50">
+            {signup.title}
           </h1>
-          <p className="text-warm-500 dark:text-warm-300">
-            Encrypted by you. Not stored for us.
-          </p>
+          <p className="text-porcelain-500 dark:text-porcelain-300">{signup.subtitle}</p>
         </div>
 
-        <div className="mb-6 rounded-2xl border border-accent-gold/30 dark:border-accent-gold/25 bg-gradient-to-br from-accent-gold/10 to-accent-gold/5 dark:from-accent-gold/15 dark:to-accent-gold/5 p-4">
+        <div className="mb-6 rounded-2xl border border-brass-400/30 bg-brass-400/10 dark:bg-brass-400/10 p-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent-gold" />
+            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-brass-500" />
             <div className="text-sm leading-relaxed text-warm-700 dark:text-warm-200">
-              <strong>Important:</strong> Your password encrypts your messages. If you lose
-              it, your messages cannot be recovered. Write it down somewhere safe.
+              <strong>{signup.warningTitle}</strong>
+              {signup.warningBody}
             </div>
           </div>
         </div>
@@ -141,7 +140,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
             <label className="mb-2 block text-sm font-semibold text-warm-700 dark:text-warm-200">
-              Email
+              {common.email}
             </label>
             <div className="group relative">
               <Mail className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
@@ -150,7 +149,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="input-field py-3 pl-11 pr-4"
-                placeholder="you@example.com"
+                placeholder={common.emailPlaceholder}
                 required
               />
             </div>
@@ -158,7 +157,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-warm-700 dark:text-warm-200">
-              Username
+              {signup.username}
             </label>
             <div className="group relative">
               <User className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
@@ -167,7 +166,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="input-field py-3 pl-11 pr-4"
-                placeholder="johndoe"
+                placeholder={signup.usernamePlaceholder}
                 required
                 minLength={3}
               />
@@ -176,7 +175,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-warm-700 dark:text-warm-200">
-              Password
+              {common.password}
             </label>
             <div className="group relative">
               <Lock className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
@@ -209,14 +208,14 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
                             ? 'bg-red-500'
                             : passwordStrength.score < 5
                             ? 'bg-accent-gold'
-                            : 'bg-primary'
+                            : 'bg-ink-700 dark:bg-porcelain-300'
                           : 'bg-warm-200 dark:bg-ink-600'
                       }`}
                     />
                   ))}
                 </div>
                 <p className="mt-1.5 text-xs text-warm-500 dark:text-warm-300">
-                  {passwordStrength.feedback}
+                  {signup.strength[Math.min(passwordStrength.score, 5)]}
                 </p>
               </div>
             )}
@@ -224,7 +223,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-warm-700 dark:text-warm-200">
-              Confirm Password
+              {signup.confirmPassword}
             </label>
             <div className="group relative">
               <Lock className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
@@ -246,18 +245,18 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
           )}
 
           <button type="submit" disabled={isLoading} className="btn-primary w-full py-3.5">
-            {isLoading ? 'Creating Account...' : 'Sign Up'}
+            {isLoading ? signup.submitting : signup.submit}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-warm-500 dark:text-warm-300">
-            Already have an account?{' '}
+            {signup.haveAccount}{' '}
             <button
               onClick={onSwitchToLogin}
-              className="font-semibold text-primary-dark dark:text-primary-light transition-colors hover:text-primary"
+              className="font-semibold text-porcelain-900 dark:text-porcelain-50 underline decoration-brass-400/60 underline-offset-4 transition-colors hover:decoration-brass-400"
             >
-              Log In
+              {signup.toLogin}
             </button>
           </p>
         </div>

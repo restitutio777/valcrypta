@@ -7,6 +7,7 @@ import { decryptPrivateKey, importPrivateKey } from '../../lib/crypto';
 import { fetchKeyBackup, uploadKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
+import { common, login } from '../../lib/copy';
 
 interface LoginPageProps {
   onSwitchToSignup: () => void;
@@ -35,7 +36,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
         });
 
       if (authError) throw authError;
-      if (!authData.user) throw new Error('Login failed');
+      if (!authData.user) throw new Error(login.errFailed);
 
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -44,7 +45,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
         .maybeSingle();
 
       if (userError) throw userError;
-      if (!userData) throw new Error('User profile not found');
+      if (!userData) throw new Error(login.errNoProfile);
 
       // Prefer the key stored on this device; fall back to the encrypted
       // cloud backup so signing in on a new device just works.
@@ -57,10 +58,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
       }
 
       if (!encryptedPrivateKey) {
-        throw new Error(
-          'No key found for this account on this device, and no cloud backup exists. ' +
-            'Sign in on your original device and enable a backup in Security Settings.'
-        );
+        throw new Error(login.errNoKey);
       }
 
       const privateKeyString = await decryptPrivateKey(encryptedPrivateKey, password);
@@ -78,7 +76,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
       setUser(authData.user);
       setKeys(userData.public_key, privateKey);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An error occurred during login';
+      const message = err instanceof Error ? err.message : login.errGeneric;
       setError(message);
     } finally {
       setIsLoading(false);
@@ -86,24 +84,22 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
   };
 
   return (
-    <div className="aurora-bg min-h-screen bg-gradient-to-br from-warm-50 via-sage-50 to-warm-100 dark:from-ink-950 dark:via-ink-900 dark:to-ink-850 flex items-center justify-center p-4">
-      <div className="glass-card w-full max-w-md rounded-3xl p-8 shadow-lift animate-scale-in">
+    <div className="aurora-bg grain min-h-screen bg-porcelain-100 dark:bg-ink-950 flex items-center justify-center p-4">
+      <div className="glass-card relative z-10 w-full max-w-md rounded-3xl p-8 shadow-lift animate-scale-in">
         <div className="mb-8 text-center">
           <div className="mb-5 flex justify-center">
             <ValCryptaLogo size="lg" showText={false} />
           </div>
-          <h1 className="mb-2 font-display text-3xl font-bold text-warm-800 dark:text-warm-50">
-            Welcome Back
+          <h1 className="mb-2 text-3xl font-semibold text-porcelain-900 dark:text-porcelain-50">
+            {login.title}
           </h1>
-          <p className="text-warm-500 dark:text-warm-300">
-            Encrypted by you. Not stored for us.
-          </p>
+          <p className="text-porcelain-500 dark:text-porcelain-300">{login.subtitle}</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
             <label className="mb-2 block text-sm font-semibold text-warm-700 dark:text-warm-200">
-              Email
+              {common.email}
             </label>
             <div className="group relative">
               <Mail className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
@@ -112,7 +108,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="input-field py-3 pl-11 pr-4"
-                placeholder="you@example.com"
+                placeholder={common.emailPlaceholder}
                 required
               />
             </div>
@@ -120,7 +116,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-warm-700 dark:text-warm-200">
-              Password
+              {common.password}
             </label>
             <div className="group relative">
               <Lock className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-warm-400 transition-colors group-focus-within:text-primary" />
@@ -149,25 +145,25 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
           )}
 
           <button type="submit" disabled={isLoading} className="btn-primary w-full py-3.5">
-            {isLoading ? 'Signing In...' : 'Sign In'}
+            {isLoading ? login.submitting : login.submit}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-warm-500 dark:text-warm-300">
-            Don't have an account?{' '}
+            {login.noAccount}{' '}
             <button
               onClick={onSwitchToSignup}
-              className="font-semibold text-primary-dark dark:text-primary-light transition-colors hover:text-primary"
+              className="font-semibold text-porcelain-900 dark:text-porcelain-50 underline decoration-brass-400/60 underline-offset-4 transition-colors hover:decoration-brass-400"
             >
-              Sign Up
+              {login.toSignup}
             </button>
           </p>
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-1.5 border-t border-sage-100 dark:border-ink-700 pt-5 text-xs text-warm-400 dark:text-warm-500">
+        <div className="mt-6 flex items-center justify-center gap-1.5 border-t hairline pt-5 text-xs text-warm-400 dark:text-warm-500">
           <ShieldCheck className="h-3.5 w-3.5 text-primary/70" />
-          End-to-end encrypted · Keys never leave your device
+          {login.footnote}
         </div>
       </div>
     </div>

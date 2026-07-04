@@ -23,9 +23,9 @@ export default function Notification() {
   };
 
   const colors = {
-    success: 'border-primary/30 text-primary-dark dark:text-primary-light',
+    success: 'border-brass-400/40 text-brass-700 dark:text-brass-300',
     error: 'border-red-300/60 dark:border-red-800/60 text-red-700 dark:text-red-300',
-    info: 'border-accent/30 text-warm-700 dark:text-warm-200',
+    info: 'border-porcelain-300 dark:border-ink-600 text-warm-700 dark:text-warm-200',
   };
 
   const Icon = icons[notification.type];

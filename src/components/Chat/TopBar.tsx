@@ -1,6 +1,7 @@
 import { ArrowLeft, ShieldCheck, Settings2 } from 'lucide-react';
 import { useChatStore } from '../../stores/chat-store';
 import { useUIStore } from '../../stores/ui-store';
+import { chat, sidebar } from '../../lib/copy';
 
 export default function TopBar() {
   const { activeContact, setActiveContact } = useChatStore();
@@ -13,7 +14,7 @@ export default function TopBar() {
           <button
             onClick={() => setActiveContact(null)}
             className="btn-ghost-icon lg:hidden"
-            title="Back to chats"
+            title={chat.backToChats}
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
@@ -25,22 +26,22 @@ export default function TopBar() {
               {activeContact.username[0].toUpperCase()}
             </div>
             <div className="min-w-0">
-              <h2 className="truncate font-display font-semibold leading-tight text-warm-800 dark:text-warm-50">
+              <h2 className="truncate font-semibold leading-tight text-warm-800 dark:text-warm-50">
                 {activeContact.username}
               </h2>
-              <p className="flex items-center gap-1.5 text-xs font-medium text-primary-dark dark:text-primary-light">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-porcelain-600 dark:text-porcelain-300">
                 <span className="relative flex h-2 w-2 flex-shrink-0">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-50" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
                 </span>
-                End-to-end encrypted
+                {chat.e2eBadge}
               </p>
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-2 px-2">
             <ShieldCheck className="h-5 w-5 text-primary" />
-            <h2 className="font-display font-semibold text-warm-800 dark:text-warm-50">
+            <h2 className="font-semibold text-warm-800 dark:text-warm-50">
               ValCrypta
             </h2>
           </div>
@@ -50,7 +51,7 @@ export default function TopBar() {
       <button
         onClick={() => setShowSecuritySettings(true)}
         className="btn-ghost-icon"
-        title="Security level"
+        title={sidebar.securityTooltip}
       >
         <Settings2 className="h-5 w-5" />
       </button>
