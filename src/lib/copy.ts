@@ -39,18 +39,30 @@ export const landing = {
     ],
   },
   specs: ['AES-256-GCM', 'RSA-OAEP-2048', 'PBKDF2 · 100.000', 'Zero-Knowledge'],
+  levelsTeaser: {
+    kicker: 'Deine Sicherheitsstufe',
+    title: 'Drei Stufen. Du entscheidest.',
+    sub: 'Nach der Anmeldung wählst du, wie viel Komfort du gegen wie viel Schutz tauschst — jederzeit änderbar, nie verpflichtend.',
+    footnote: 'Details und Wechsel jederzeit in den Sicherheitseinstellungen der App.',
+  },
   storage: {
     kicker: 'Datenbilanz',
-    title: 'Was wir speichern — und was nicht',
+    title: 'Was gespeichert wird — und was nicht',
     sub: 'Die vollständige Liste. Es gibt keine zweite.',
     weStore: {
-      title: 'Wir speichern',
+      title: 'Gespeichert wird',
       items: ['E-Mail-Adresse', 'Nutzername', 'Öffentlicher Schlüssel', 'Chiffretext'],
     },
     weDont: {
-      title: 'Wir speichern nicht',
-      items: ['Klartext deiner Nachrichten', 'Private Schlüssel', 'Metadaten-Profile', 'Werbedaten'],
+      title: 'Nicht gespeichert wird',
+      items: ['Klartext deiner Nachrichten', 'Private Schlüssel', 'Tracking- oder Analyse-Tools', 'Werbedaten'],
     },
+  },
+  transparency: {
+    kicker: 'Wer dahintersteckt',
+    title: 'Kein Unternehmen. Ein Mensch.',
+    body:
+      'ValCrypta ist kein Produkt einer Firma und wird nicht durch Werbung finanziert. Entwickelt und betrieben von einer einzelnen Person, die private Kommunikation für ein Grundbedürfnis hält — nicht für ein Feature. Erfasst wird nur, was ein Server technisch braucht, um eine Nachricht zuzustellen. Worüber du sprichst, bleibt niemandes Geschäft außer deinem und dem deines Gegenübers.',
   },
   finalCta: {
     pre: 'Ein Gespräch, das ',

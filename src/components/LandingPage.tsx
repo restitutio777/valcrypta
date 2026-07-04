@@ -1,5 +1,7 @@
 import ValCryptaLogo from './ValCryptaLogo';
-import { landing } from '../lib/copy';
+import { landing, security } from '../lib/copy';
+
+const LEVEL_ORDER = ['maximum', 'balanced', 'comfort'] as const;
 
 interface LandingPageProps {
   onGetStarted: () => void;
@@ -173,6 +175,38 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       </section>
 
       {/* ---------------------------------------------------------------- */}
+      {/* Drei Sicherheitsstufen — kurz, bevor man sich registriert           */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container mx-auto max-w-4xl px-6 py-4 md:py-8">
+        <div className="text-center">
+          <span className="spec-label">{landing.levelsTeaser.kicker}</span>
+          <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+            {landing.levelsTeaser.title}
+          </h2>
+          <p className="mx-auto mt-3 max-w-lg leading-relaxed text-porcelain-600 dark:text-porcelain-300">
+            {landing.levelsTeaser.sub}
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          {LEVEL_ORDER.map((id) => (
+            <div key={id} className="glass-card rounded-2xl p-5">
+              <p className="spec-label !text-brass-600 dark:!text-brass-300">
+                {security.levels[id].name}
+              </p>
+              <p className="mt-2 text-sm leading-snug text-porcelain-600 dark:text-porcelain-300">
+                {security.levels[id].tagline}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-6 text-center text-xs text-porcelain-500 dark:text-porcelain-400">
+          {landing.levelsTeaser.footnote}
+        </p>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
       {/* Was wir speichern — und was nicht                                  */}
       {/* ---------------------------------------------------------------- */}
       <section className="container mx-auto max-w-5xl px-4 py-16 sm:px-6 md:py-24">
@@ -235,6 +269,19 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Wer dahintersteckt — Transparenz statt Impressum-Floskeln           */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container mx-auto max-w-2xl px-6 py-16 text-center md:py-20">
+        <span className="spec-label">{landing.transparency.kicker}</span>
+        <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+          {landing.transparency.title}
+        </h2>
+        <p className="mx-auto mt-5 max-w-xl leading-relaxed text-porcelain-600 dark:text-porcelain-300">
+          {landing.transparency.body}
+        </p>
       </section>
 
       {/* ---------------------------------------------------------------- */}

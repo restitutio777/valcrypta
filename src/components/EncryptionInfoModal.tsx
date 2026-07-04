@@ -1,4 +1,4 @@
-import { X, Lock, Key, Shield } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useUIStore } from '../stores/ui-store';
 import { encryption } from '../lib/copy';
 
@@ -13,50 +13,46 @@ export default function EncryptionInfoModal() {
       onClick={() => setShowEncryptionInfo(false)}
     >
       <div
-        className="glass-card max-h-[90vh] w-full max-w-2xl animate-scale-in overflow-y-auto rounded-3xl shadow-lift"
+        className="glass-card max-h-[90vh] w-full max-w-xl animate-scale-in overflow-y-auto rounded-3xl shadow-lift"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b hairline bg-white/85 dark:bg-ink-850/85 p-6 backdrop-blur-xl">
-          <h2 className="text-2xl font-semibold text-warm-800 dark:text-warm-50">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b hairline bg-white/85 dark:bg-ink-850/85 px-6 py-5 backdrop-blur-xl sm:px-7">
+          <h2 className="font-display text-xl font-semibold tracking-[-0.01em] text-warm-800 dark:text-warm-50 sm:text-2xl">
             {encryption.title}
           </h2>
           <button onClick={() => setShowEncryptionInfo(false)} className="btn-ghost-icon">
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="space-y-6 p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-gradient shadow-soft">
-              <Lock className="h-6 w-6 text-porcelain-50" />
-            </div>
+        <div className="px-6 sm:px-7">
+          <div className="hairline grid grid-cols-[2.25rem_1fr] gap-4 border-t py-7 sm:grid-cols-[2.75rem_1fr] sm:gap-6">
+            <span className="spec-label pt-1 !text-brass-600 dark:!text-brass-300">01</span>
             <div>
-              <h3 className="mb-2 text-lg font-semibold text-warm-800 dark:text-warm-50">
+              <h3 className="text-base font-semibold text-warm-800 dark:text-warm-50">
                 {encryption.s1Title}
               </h3>
-              <p className="leading-relaxed text-warm-600 dark:text-warm-300">
+              <p className="mt-2 leading-relaxed text-warm-600 dark:text-warm-300">
                 {encryption.s1Body}
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-gradient shadow-soft">
-              <Key className="h-6 w-6 text-porcelain-50" />
-            </div>
+          <div className="hairline grid grid-cols-[2.25rem_1fr] gap-4 border-t py-7 sm:grid-cols-[2.75rem_1fr] sm:gap-6">
+            <span className="spec-label pt-1 !text-brass-600 dark:!text-brass-300">02</span>
             <div>
-              <h3 className="mb-2 text-lg font-semibold text-warm-800 dark:text-warm-50">
+              <h3 className="text-base font-semibold text-warm-800 dark:text-warm-50">
                 {encryption.s2Title}
               </h3>
-              <p className="mb-3 leading-relaxed text-warm-600 dark:text-warm-300">
+              <p className="mt-2 leading-relaxed text-warm-600 dark:text-warm-300">
                 {encryption.s2Body}
               </p>
-              <ul className="space-y-2 text-warm-600 dark:text-warm-300">
+              <ul className="mt-3 space-y-2">
                 {encryption.s2Points.map(([label, rest]) => (
-                  <li key={label} className="flex items-start gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brass-400" />
+                  <li key={label} className="flex items-start gap-2.5 leading-relaxed text-warm-600 dark:text-warm-300">
+                    <span className="mt-2 h-1 w-1 flex-shrink-0 rounded-full bg-porcelain-400 dark:bg-porcelain-500" />
                     <span>
-                      <strong>{label}</strong>
+                      <strong className="font-semibold text-warm-800 dark:text-warm-100">{label}</strong>
                       {rest}
                     </span>
                   </li>
@@ -65,33 +61,29 @@ export default function EncryptionInfoModal() {
             </div>
           </div>
 
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-gradient shadow-soft">
-              <Shield className="h-6 w-6 text-porcelain-50" />
-            </div>
+          <div className="hairline grid grid-cols-[2.25rem_1fr] gap-4 border-t py-7 sm:grid-cols-[2.75rem_1fr] sm:gap-6">
+            <span className="spec-label pt-1 !text-brass-600 dark:!text-brass-300">03</span>
             <div>
-              <h3 className="mb-2 text-lg font-semibold text-warm-800 dark:text-warm-50">
+              <h3 className="text-base font-semibold text-warm-800 dark:text-warm-50">
                 {encryption.s3Title}
               </h3>
-              <ul className="space-y-2 text-warm-600 dark:text-warm-300">
+              <ul className="mt-3 space-y-2">
                 {encryption.s3Points.map((point) => (
-                  <li key={point} className="flex items-start gap-2">
-                    <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brass-400" />
+                  <li key={point} className="flex items-start gap-2.5 leading-relaxed text-warm-600 dark:text-warm-300">
+                    <span className="mt-2 h-1 w-1 flex-shrink-0 rounded-full bg-porcelain-400 dark:bg-porcelain-500" />
                     <span>{point}</span>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
+        </div>
 
-          <div className="rounded-2xl border hairline bg-mist-50 dark:bg-ink-800 p-5">
-            <h4 className="mb-2 font-semibold text-warm-800 dark:text-warm-100">
-              {encryption.techTitle}
-            </h4>
-            <p className="text-sm leading-relaxed text-warm-600 dark:text-warm-200">
-              {encryption.techBody}
-            </p>
-          </div>
+        <div className="hairline border-t px-6 py-6 sm:px-7">
+          <p className="spec-label">{encryption.techTitle}</p>
+          <p className="mt-2 text-sm leading-relaxed text-warm-500 dark:text-warm-300">
+            {encryption.techBody}
+          </p>
         </div>
       </div>
     </div>
