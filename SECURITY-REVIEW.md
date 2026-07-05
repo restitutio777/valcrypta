@@ -173,7 +173,7 @@ Offene Handlungspunkte (die live-verifizierten B-Punkte B-1/B-4/B-6 waren unkrit
 
 | Prio | Maßnahme | Bezug |
 |------|----------|-------|
-| ✅ | **A-4 umgesetzt** (dieser PR): Frontend liest keine `email` mehr aus `users`; Migration `REVOKE SELECT (email)`. **⚠️ Migration erst NACH dem Frontend-Deploy anwenden.** | A-4 |
+| ✅ | **A-4 umgesetzt** (dieser PR): Frontend liest keine `email` mehr aus `users`; Migration entzieht das **tabellenweite** SELECT und grantet nur `id, username, public_key, created_at` (ein spaltenweiser `REVOKE` allein ist wirkungslos — live verifiziert). **⚠️ Migration erst NACH dem Frontend-Deploy anwenden** (sonst `42501` für den alten Client — live verifiziert). | A-4 |
 | ✅ | **A-6 umgesetzt** (dieser PR): `vercel.json` mit strikter CSP + `X-Content-Type-Options`/`X-Frame-Options`/`Referrer-Policy`/`Permissions-Policy`/HSTS | A-6, B-4 |
 | 2 | Entsperrten Key non-extractable speichern statt Klartext-PKCS8 | A-3 |
 | 2 | Schlüssel-Fingerprint/Verify-Flow gegen Server-MITM | A-1 |
