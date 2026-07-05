@@ -2,10 +2,14 @@
 //
 // Stimmregeln: konkrete Mechanismen statt Superlative, keine Ausrufezeichen,
 // kurze Aussagesätze. Jede technische Behauptung entspricht dem Code.
+//
+// Kein institutionelles "wir": ValCrypta ist keine Firma, NGO oder Behörde,
+// sondern ein privates, nicht kommerzielles Projekt. Subjekt ist die App,
+// der Server, der Mechanismus oder du — nie ein Betreiber-"wir".
 
 export const brand = {
   name: 'ValCrypta',
-  tagline: 'Von dir verschlüsselt. Für uns unlesbar.',
+  tagline: 'Von dir verschlüsselt. Auf dem Server unlesbar.',
 } as const;
 
 export const landing = {
@@ -18,6 +22,23 @@ export const landing = {
     'Der Server speichert nur Chiffretext.',
   ctaPrimary: 'Konto erstellen',
   ctaSecondary: 'Anmelden',
+  // Zweck des Projekts: kein Produkt, keine Firma. Warum es das gibt.
+  purpose: {
+    kicker: 'Warum es das gibt',
+    title: 'Ein privates Projekt, kein Produkt',
+    body: [
+      'ValCrypta ist keine Firma, keine Organisation und keine Behörde. Es ist ein privates, nicht kommerzielles Projekt mit einem Ziel: Redefreiheit schützen.',
+      'Ein Gespräch soll privat bleiben können, weil niemand mitliest — kein Server, kein Dritter und auch nicht die Person, die ValCrypta betreibt. Nichts wird verkauft, es gibt keine Werbung und kein Tracking.',
+    ],
+    responsibility:
+      'ValCrypta stellt nur das Werkzeug bereit. Was du damit schreibst und mit wem, verantwortest du selbst.',
+  },
+  // Drei Stufen auf der Landingpage — dieselbe Quelle wie im Einstellungs-Modal.
+  levels: {
+    kicker: 'Drei Stufen',
+    title: 'So viel Schutz, wie du brauchst',
+    sub: 'Sicherheit und Komfort sind ein Abwägen. Du entscheidest — und kannst die Stufe jederzeit in den Einstellungen ändern.',
+  },
   how: {
     title: 'Wie ValCrypta funktioniert',
     steps: [
@@ -41,14 +62,14 @@ export const landing = {
   specs: ['AES-256-GCM', 'RSA-OAEP-2048', 'PBKDF2 · 100.000', 'Zero-Knowledge'],
   storage: {
     kicker: 'Datenbilanz',
-    title: 'Was wir speichern — und was nicht',
+    title: 'Was der Server speichert — und was nicht',
     sub: 'Die vollständige Liste. Es gibt keine zweite.',
     weStore: {
-      title: 'Wir speichern',
+      title: 'Auf dem Server',
       items: ['E-Mail-Adresse', 'Nutzername', 'Öffentlicher Schlüssel', 'Chiffretext'],
     },
     weDont: {
-      title: 'Wir speichern nicht',
+      title: 'Niemals auf dem Server',
       items: ['Klartext deiner Nachrichten', 'Private Schlüssel', 'Metadaten-Profile', 'Werbedaten'],
     },
   },
@@ -163,7 +184,7 @@ export const encryption = {
   title: 'So funktioniert die Verschlüsselung',
   s1Title: 'Deine Nachrichten sind privat',
   s1Body:
-    'ValCrypta verschlüsselt Ende-zu-Ende: Lesen können eine Nachricht nur du und dein Gegenüber. Auch wir nicht.',
+    'ValCrypta verschlüsselt Ende-zu-Ende: Lesen können eine Nachricht nur du und dein Gegenüber. Kein Server und kein Dritter.',
   s2Title: 'Zwei Schlüssel',
   s2Body: 'Bei der Registrierung erzeugt dein Gerät ein Schlüsselpaar:',
   s2Points: [

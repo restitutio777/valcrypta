@@ -1,5 +1,7 @@
 import ValCryptaLogo from './ValCryptaLogo';
-import { landing } from '../lib/copy';
+import { landing, security, brand } from '../lib/copy';
+
+const LEVEL_ORDER = ['maximum', 'balanced', 'comfort'] as const;
 
 interface LandingPageProps {
   onGetStarted: () => void;
@@ -143,6 +145,26 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       </header>
 
       {/* ---------------------------------------------------------------- */}
+      {/* Warum es das gibt — Zweck: privates, nicht kommerzielles Projekt   */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container mx-auto max-w-3xl px-6 py-20 md:py-24">
+        <span className="spec-label">{landing.purpose.kicker}</span>
+        <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+          {landing.purpose.title}
+        </h2>
+        <div className="mt-6 space-y-5">
+          {landing.purpose.body.map((para) => (
+            <p key={para} className="max-w-2xl text-lg leading-relaxed text-porcelain-600 dark:text-porcelain-300">
+              {para}
+            </p>
+          ))}
+        </div>
+        <p className="mt-8 max-w-2xl border-l-2 border-brass-400/70 pl-5 leading-relaxed text-porcelain-700 dark:text-porcelain-200">
+          {landing.purpose.responsibility}
+        </p>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
       {/* Wie ValCrypta funktioniert — typographic, numbered, no icons       */}
       {/* ---------------------------------------------------------------- */}
       <section className="container mx-auto max-w-3xl px-6 py-20 md:py-28">
@@ -173,7 +195,49 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       </section>
 
       {/* ---------------------------------------------------------------- */}
-      {/* Was wir speichern — und was nicht                                  */}
+      {/* Drei Stufen — Schutz vs. Komfort, je nach Bedürfnis                 */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container mx-auto max-w-5xl px-6 py-16 md:py-24">
+        <div className="max-w-2xl">
+          <span className="spec-label">{landing.levels.kicker}</span>
+          <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+            {landing.levels.title}
+          </h2>
+          <p className="mt-3 text-lg leading-relaxed text-porcelain-600 dark:text-porcelain-300">
+            {landing.levels.sub}
+          </p>
+        </div>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {LEVEL_ORDER.map((id) => {
+            const level = security.levels[id];
+            return (
+              <div
+                key={id}
+                className="hairline flex flex-col rounded-2xl border bg-white/50 p-6 dark:bg-ink-900/40"
+              >
+                <span className="font-display text-xl font-semibold tracking-[-0.01em] text-porcelain-900 dark:text-porcelain-100">
+                  {level.name}
+                </span>
+                <span className="mt-1 text-sm text-brass-500 dark:text-brass-300">{level.tagline}</span>
+                <ul className="mt-5 space-y-3">
+                  {level.points.map((point) => (
+                    <li
+                      key={point}
+                      className="grid grid-cols-[0.5rem_1fr] items-baseline gap-3 text-sm leading-relaxed text-porcelain-600 dark:text-porcelain-300"
+                    >
+                      <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-brass-400" />
+                      <span>{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Was der Server speichert — und was nicht                           */}
       {/* ---------------------------------------------------------------- */}
       <section className="container mx-auto max-w-5xl px-4 py-16 sm:px-6 md:py-24">
         <div className="gradient-ring rounded-[2rem] shadow-lift">
@@ -269,7 +333,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
             ))}
           </div>
           <p className="text-sm text-porcelain-500 dark:text-porcelain-400">
-            {landing.footerLegal} · Von dir verschlüsselt. Für uns unlesbar.
+            {landing.footerLegal} · {brand.tagline}
           </p>
         </div>
       </footer>
