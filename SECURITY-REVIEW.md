@@ -72,7 +72,7 @@ Jeder eingeloggte Nutzer darf `select *` auf `users` — inklusive **`email` all
 
 Der Private Key wird mit **PBKDF2-HMAC-SHA256, 100 000 Iterationen** gewrappt. Das liegt deutlich unter aktuellen Empfehlungen (OWASP 2024/25: ≥ 600 000 für PBKDF2-SHA256). Dieses **gewrappte Blob wird für „balanced"/„comfort" in `key_backups` in die Cloud geladen** — ein Server-Leak oder Zugriff auf diese Zeile ermöglicht einen **Offline-Angriff**. Zugleich ist die Passwortregel schwach: `score ≥ 3` ist bereits mit z. B. 12 Zeichen Kleinbuchstaben oder 8 Zeichen (Klein+Groß) erfüllt; kein Entropie-Minimum, kein Abgleich gegen geleakte Passwörter. Schwaches Passwort + niedrige Iterationszahl + Cloud-Backup = realistisches Offline-Cracking.
 
-**Empfehlung:** Iterationszahl erhöhen (≥ 600 000) oder auf **Argon2id** (WASM) wechseln; Salt-Länge ist mit 16 Byte ok. Passwortpolicy verschärfen (Mindestlänge ~12, Bruch-Check via k-Anonymity/HIBP-Range-API oder lokale Liste), und Nutzer bei aktivem Cloud-Backup gezielt auf die Passwortstärke hinweisen.
+**Empfehlung:** Iterationszahl erhöhen (≥ 600 000) oder auf **Argon2id** (WASM) wechseln; Salt-Länge ist mit 16 Byte ok. Passwortpolicy verschärfen (Mindestlänge ~12), und Nutzer bei aktivem Cloud-Backup gezielt auf die Passwortstärke hinweisen. Ein Abgleich gegen geleakte Passwörter ist hier besonders sinnvoll, weil Supabases serverseitiger Leaked-Password-Schutz ein **Pro-Feature** ist und im genutzten **Free-Plan nicht verfügbar** — der Abgleich lässt sich aber kostenlos **clientseitig** über die HIBP-Range-API (k-Anonymity, nur SHA-1-Präfix wird gesendet) umsetzen.
 
 ### A-6 · Mittel · Keine Content-Security-Policy; Runtime-Abhängigkeit von externen CDNs
 **Ort:** `index.html` (kein CSP-Meta), kein `vercel.json`/`public/_headers`; externe Fonts von `api.fontshare.com`, `cdn.fontshare.com`, `fonts.googleapis.com`, `fonts.gstatic.com`
@@ -113,31 +113,45 @@ Der (vom Sender kontrollierte) entschlüsselte Dateiname wird als `a.download` g
 - **Anon Key im Client** ist by-design öffentlich; keine `service_role`-Leaks im Code gefunden.
 - Object-URLs für entschlüsselte Bilder werden getrackt und beim Unmount revoked.
 
+### A-12 · Niedrig · `has_file_access(path, user_id)` als RPC-Orakel aufrufbar
+**Ort:** `supabase/init.sql:208` (Funktion), Live-Advisor `authenticated_security_definer_function_executable`
+
+Die `SECURITY DEFINER`-Funktion `has_file_access(file_path text, user_id uuid)` ist für die `authenticated`-Rolle direkt über `/rest/v1/rpc/has_file_access` aufrufbar und nimmt die **`user_id` als Parameter** (statt intern `auth.uid()` zu verwenden). Ein eingeloggter Nutzer kann damit `has_file_access('<pfad>', '<fremde_uid>')` aufrufen und erhält ein Ja/Nein, **ob eine fremde UID Sender/Empfänger eines bestimmten Objektpfads ist** — ein Informations-Orakel. Praktisch begrenzt, weil Objektpfade `{senderId}/{uuid}` einen nicht erratbaren UUID enthalten; wer den Pfad aber kennt (z. B. aus einer geteilten Nachricht), kann Beziehungen bestätigen.
+
+**Empfehlung:** Den `user_id`-Parameter entfernen und in der Funktion `auth.uid()` verwenden; die Storage-SELECT-Policy entsprechend auf `has_file_access(name)` umstellen. Dadurch ist kein Abfragen fremder UIDs mehr möglich.
+
 ---
 
 ## Teil B — Prüfplan (nur an laufender Instanz / im Betrieb verifizierbar)
 
 Diese Punkte lassen sich aus dem Repo **nicht** abschließend beurteilen und müssen aktiv verifiziert werden. Empfohlen: über die Supabase-MCP-Tools bzw. das Dashboard.
 
-> **⚠️ Blocker beim Live-Check (2026-07-05):** Das über die Supabase-MCP-Verbindung erreichbare Projekt (`auvmdkzulyrvhfylfjpy`, „bolt-native-database…") enthält **keine ValCrypta-Tabelle** — kein `messages`, `users`, `contacts`, `key_backups`. Stattdessen liegen dort 42 Tabellen einer **völlig anderen App** (Clubs/Playgrounds/Events/Wettbewerbe). Da die deployte ValCrypta als funktionierender Messenger zwingend eine `messages`-Tabelle braucht, nutzt sie ein **anderes** Supabase-Projekt, das über diese Verbindung nicht erreichbar ist. Die echte ValCrypta-URL steht nur in der gitignored `.env`/den Vercel-Env-Vars und war hier nicht einsehbar.
-> **Konsequenz:** B-1, B-2, B-3, B-6 konnten **nicht am echten ValCrypta-Backend** verifiziert werden. Zum Abschluss wird entweder die MCP-Verbindung zum richtigen Projekt oder dessen Project-Ref benötigt.
-> **Nebenbefund (nicht ValCrypta):** Das erreichbare Fremd-Projekt hat 196 Security-Lints, u. a. `SECURITY DEFINER`-Funktionen wie `admin_delete_user`/`admin_delete_club`, die per `anon`-Rolle via `/rest/v1/rpc/...` ausführbar sind, eine RLS-INSERT-Policy mit `WITH CHECK (true)`, deaktivierten Leaked-Password-Schutz, aktivierte anonyme Anmeldungen und öffentliche Buckets mit Listing. Falls dieses Projekt ebenfalls dem Betreiber gehört, sollte es separat gehärtet werden — es ist aber **nicht** die Datenbasis dieser App.
+> **✅ Live gegen das echte ValCrypta-Backend verifiziert (2026-07-05, Projekt `kxbllpwcsqbmqnmwuqyw`).** Die MCP-Verbindung wurde auf das korrekte Projekt umgestellt; alle 8 erwarteten Tabellen (`users`, `messages`, `contacts`, `key_backups`, `typing_status`, `unread_counts`, `notification_settings`, `email_notification_queue`) sind vorhanden, RLS ist überall aktiviert. B-1, B-2, B-3, B-4, B-6 sind damit abgearbeitet (Ergebnisse unten). B-5/B-7 bleiben repo-/betriebsseitig offen.
+>
+> *Hinweis zur ersten Prüfung: Die anfangs erreichbare MCP-Verbindung zeigte auf ein **fremdes** Projekt (`auvmdkzulyrvhfylfjpy`, 42 Tabellen einer anderen App, 196 Lints). Das war nicht ValCryptas Datenbank und ist hier ohne Belang — nur als Warnung, die MCP stets aufs richtige Projekt zu richten.*
 
-### B-1 · RLS der produktiven Zusatztabellen (hohe Priorität) — ⛔ offen (falsches Projekt erreichbar)
+### B-1 · RLS der produktiven Zusatztabellen — ✅ erledigt (unkritisch)
+Die vier zuvor ungeprüften Tabellen sind **sauber owner-scoped**, kein Leak:
+- `typing_status` — SELECT `auth.uid() = user_id OR auth.uid() = contact_id`; INSERT/UPDATE/DELETE nur eigene Zeile. OK.
+- `unread_counts`, `notification_settings` — SELECT/INSERT/UPDATE nur `auth.uid() = user_id`. OK.
+- `email_notification_queue` — **nur** eine Policy `Service role can manage email queue` (Rolle `service_role`), **keine** Policy für `authenticated` → bei aktivem RLS für Clients standardmäßig **deny-all**. Die anfängliche Sorge (Metadaten-/E-Mail-Leck über diese Queue) ist damit **entkräftet**: normale Nutzer können sie nicht lesen. (Der Server/Service-Role sieht die Inhalte erwartungsgemäß.)
+
+Zusätzlich live bestätigt: **A-4** (`users`-SELECT `USING (true)` → alle E-Mails für jeden authentifizierten Nutzer lesbar) und **A-8** (`messages`-UPDATE für den Empfänger ohne Spaltenbeschränkung). Beide gelten unverändert.
 `supabase/init.sql:253-256` weist ausdrücklich darauf hin, dass in Produktion weitere Tabellen existieren, die **nicht im Repo** sind:
 `typing_status`, `unread_counts`, `notification_settings`, `email_notification_queue`.
 Diese sind **ungeprüft**. Besonders `email_notification_queue` kann Metadaten (wer-schrieb-wem, wann) und E-Mail-Adressen enthalten.
 **Zu tun:** `list_tables` + `get_advisors(type=security)`; für jede Tabelle prüfen: RLS aktiv? Policies korrekt (owner-scoped)? Trigger/Funktionen `SECURITY DEFINER` mit gepinntem `search_path`? Wird dort Klartext gespeichert?
 
-### B-2 · Supabase-Auth-Konfiguration — ⛔ offen (falsches Projekt erreichbar)
-- E-Mail-Bestätigung aktiv? (Der Signup-Code erwartet eine sofortige Session — deutet auf **deaktivierte Bestätigung** hin → Account-Squatting/Spam möglich.)
-- „Leaked Password Protection" aktiv?
-- Rate-Limits für Login/Signup/OTP.
-- JWT-Ablaufzeit, Refresh-Token-Rotation.
-- Zulässige Redirect-URLs / Site-URL korrekt eingegrenzt.
+### B-2 · Supabase-Auth-Konfiguration — ✅ teilweise erledigt
+- **Anonyme Anmeldungen:** nicht aktiviert (Advisor meldet keinen `auth_allow_anonymous_sign_ins`). Gut.
+- **Leaked-Password-Schutz (HIBP):** deaktiviert. **Das ist eine Supabase-Pro-Funktion und steht im Free-Plan nicht zur Verfügung** — daher hier kein Handlungspunkt. Ersatzweise clientseitig lösbar (siehe A-5): der HIBP-Range-API-Abgleich per k-Anonymity ist kostenlos und ohne Supabase-Pro direkt im Browser machbar.
+- **Noch manuell im Dashboard zu prüfen** (nicht über MCP-Advisors sichtbar): E-Mail-Bestätigung (der Signup-Code erwartet eine sofortige Session → deutet auf **deaktivierte Bestätigung** hin → Account-Squatting/Spam möglich), Rate-Limits für Login/Signup/OTP, JWT-Ablaufzeit/Refresh-Rotation, zulässige Redirect-/Site-URLs.
 
-### B-3 · Supabase Security Advisors — ⛔ offen (falsches Projekt erreichbar)
-`get_advisors(type=security)` und `(type=performance)` laufen lassen; alle „security"-Findings adressieren (fehlende RLS, `SECURITY DEFINER`-Views, exponierte Extensions etc.).
+### B-3 · Supabase Security Advisors — ✅ erledigt (2026-07-05)
+`get_advisors(security)` gegen `kxbllpwcsqbmqnmwuqyw`. Ergebnis (nur WARN/INFO, **keine** ERROR, **keine** fehlende RLS, **keine** `always-true`-Policy):
+- **8× „Table exposed in GraphQL"** (`users`, `messages`, `contacts`, `key_backups`, `typing_status`, `unread_counts`, `notification_settings`, `email_notification_queue`) — die `authenticated`-Rolle hat Tabellen-`SELECT`-Grant, wodurch die Tabellen im API-/GraphQL-Schema *auffindbar* sind. **Kein Datenleck**, weil RLS die Zeilen weiterhin filtert (bei `email_notification_queue` = deny-all für Clients). Empfehlung (Defense-in-Depth): auf Tabellen, die kein Client direkt lesen muss (v. a. `key_backups`, `email_notification_queue`), `REVOKE SELECT ... FROM authenticated`.
+- **2× „SECURITY DEFINER per RPC ausführbar"**: `has_file_access(file_path, user_id)` und `reset_unread_count(p_contact_id)`. → Neuer Befund **A-12** (unten) zu `has_file_access`.
+- **1× Leaked-Password-Schutz aus** — Pro-Feature, im Free-Plan n/a (s. B-2), kein Handlungspunkt.
 
 ### B-4 · HTTP-Security-Header live prüfen — ✅ erledigt (2026-07-05)
 Live geprüft an `https://valcrypta.vercel.app`. Ergebnis: **nur `Strict-Transport-Security` vorhanden** (2 Jahre, includeSubDomains, preload). **Fehlend: CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.** HTML-Antwort mit `access-control-allow-origin: *`. → Umsetzung siehe A-6.
@@ -145,8 +159,8 @@ Live geprüft an `https://valcrypta.vercel.app`. Ergebnis: **nur `Strict-Transpo
 ### B-5 · Dependency-/Supply-Chain-Audit
 `npm audit` / `npm outdated` ausführen; `@supabase/supabase-js`, `vite`, `zustand`, `lucide-react`, `react` auf bekannte CVEs prüfen. Lockfile-Integrität sicherstellen. Externe Font-CDNs (A-6) als Supply-Chain-Fläche bewerten.
 
-### B-6 · Storage-Bucket-Einstellungen — ⛔ offen (falsches Projekt erreichbar)
-Bestätigen, dass `encrypted_files` **privat** ist (SQL sagt `public=false`) und keine öffentlichen/signierten URLs mit zu langer Gültigkeit erzeugt werden. Max. Objektgröße/Bucket-Limits serverseitig (Client erzwingt nur 25 MB).
+### B-6 · Storage-Bucket-Einstellungen — ✅ erledigt (unkritisch)
+Live geprüft: Bucket `encrypted_files` ist **privat** (`public=false`), `file_size_limit = 26214400` (25 MiB, serverseitig — deckt sich mit dem 25-MB-Client-Limit), `allowed_mime_types = null`. Die drei `storage.objects`-Policies sind **deckungsgleich mit `init.sql`** (Upload/Delete nur im eigenen `{uid}/`-Ordner, SELECT via `has_file_access`) — kein Drift. Keine öffentlichen Bucket-Listings. In Ordnung.
 
 ### B-7 · Geheimnis-/Konfig-Hygiene
 Sicherstellen, dass in Vercel nur `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` (öffentlich) gesetzt sind und **kein `service_role`-Key** o. Ä. clientseitig landet. `.env` ist gitignored — Git-History auf versehentlich committete Secrets prüfen.
@@ -155,17 +169,20 @@ Sicherstellen, dass in Vercel nur `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`
 
 ## Priorisierte Remediation-Roadmap
 
+Offene Handlungspunkte (die live-verifizierten B-Punkte B-1/B-4/B-6 waren unkritisch und sind hier nicht mehr gelistet):
+
 | Prio | Maßnahme | Bezug |
 |------|----------|-------|
-| 1 | E-Mail-PII aus der breiten `users`-SELECT-Policy entfernen | A-4 |
-| 1 | RLS der produktiven Zusatztabellen prüfen/absichern | B-1 |
-| 1 | Strikte CSP + Security-Header (`vercel.json`/`_headers`) | A-6, B-4 |
+| 1 | E-Mail-PII aus der breiten `users`-SELECT-Policy entfernen (live bestätigt) | A-4 |
+| 1 | Strikte CSP + Security-Header (`vercel.json`/`_headers`) — live nur HSTS gesetzt | A-6, B-4 |
 | 2 | Entsperrten Key non-extractable speichern statt Klartext-PKCS8 | A-3 |
 | 2 | Schlüssel-Fingerprint/Verify-Flow gegen Server-MITM | A-1 |
-| 2 | KDF härten (≥600k PBKDF2 / Argon2id) + Passwortpolicy | A-5 |
-| 2 | Supabase-Auth-Konfig + Advisors prüfen | B-2, B-3 |
+| 2 | KDF härten (≥600k PBKDF2 / Argon2id) + Passwortlänge + **client-seitiger** HIBP-Check (Server-Schutz ist Pro-only) | A-5 |
+| 2 | E-Mail-Bestätigung/Rate-Limits im Auth-Dashboard prüfen | B-2 |
 | 3 | Nachrichten signieren (Authentizität) | A-2 |
 | 3 | `messages`-UPDATE auf `read_at` einschränken | A-8 |
+| 3 | `has_file_access` auf `auth.uid()` umstellen (Orakel schließen) | A-12 |
+| 3 | Defense-in-Depth: `REVOKE SELECT` auf `key_backups`/`email_notification_queue` von `authenticated` | B-3 |
 | 3 | Dependency-Audit, Dateinamen sanitisieren, Metadaten-Grenze dokumentieren | B-5, A-9, A-10 |
 | 4 | Forward Secrecy / Ratcheting evaluieren | A-7 |
 
@@ -173,6 +190,6 @@ Sicherstellen, dass in Vercel nur `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`
 
 ## Methodik & Umfang
 
-Geprüft wurde der Quellcode des deployten Stands (`main`): `src/lib/crypto.ts`, `src/lib/key-session.ts`, `src/lib/storage.ts`, `src/lib/files.ts`, `src/lib/supabase.ts`, die Auth-Screens, `ChatArea`/`Sidebar`/`FileMessage`, `App.tsx`, die Stores sowie `supabase/init.sql` und die Migrationen. Nicht geprüft (weil nicht im Repo bzw. nur live verifizierbar): produktive Zusatztabellen, Supabase-Projektkonfiguration, Vercel-Header, installierte Dependency-Versionen — siehe Teil B.
+Geprüft wurde der Quellcode des deployten Stands (`main`): `src/lib/crypto.ts`, `src/lib/key-session.ts`, `src/lib/storage.ts`, `src/lib/files.ts`, `src/lib/supabase.ts`, die Auth-Screens, `ChatArea`/`Sidebar`/`FileMessage`, `App.tsx`, die Stores sowie `supabase/init.sql` und die Migrationen. Zusätzlich **live gegen das echte Backend** (Supabase-Projekt `kxbllpwcsqbmqnmwuqyw`, Vercel-Deployment) verifiziert: Security-Advisors, RLS-Policies aller 8 Tabellen, Storage-Bucket/-Policies, HTTP-Header (Teil B, B-1–B-4/B-6). Offen bleiben nur `npm audit`/Dependency-Versionen (B-5), einige Auth-Dashboard-Einstellungen (B-2) und die Secret-Hygiene der Vercel-Env (B-7).
 
 *Dieses Dokument ist eine Momentaufnahme des Code-Reviews und ersetzt keine dynamische Prüfung (Pentest) der laufenden Instanz.*
