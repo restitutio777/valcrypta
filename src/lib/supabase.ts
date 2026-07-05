@@ -15,7 +15,11 @@ export type Database = {
       users: {
         Row: {
           id: string;
-          email: string;
+          // Optional: the API roles no longer have column-level SELECT on
+          // `email` (see supabase/migrations/*_restrict_users_email_select.sql),
+          // so client reads of the users table never include it. Email comes
+          // from the auth session (session.user.email), not this table.
+          email?: string;
           username: string;
           public_key: string;
           created_at: string;
