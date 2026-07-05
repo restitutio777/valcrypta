@@ -186,6 +186,7 @@ Offene Handlungspunkte (die live-verifizierten B-Punkte B-1/B-4/B-6 waren unkrit
 | ✅ dieser PR | **A-9** Download-Dateiname sanitisiert | A-9 |
 | ✅ dieser PR | **A-12** `has_file_access` nutzt intern `auth.uid()` (Orakel geschlossen; Migration + `init.sql`) | A-12 |
 | ✅ dieser PR | **A-3** Entsperrter Key nie mehr Klartext at rest: comfort = non-extractable `CryptoKey` in IndexedDB, balanced = AES-GCM-Split (Ciphertext in `sessionStorage`, non-extractable Wrapping-Key in IndexedDB), Stufenwechsel mit Passwort-Neueingabe, Legacy-Migration beim Restore (24 Browser-Tests) | A-3 |
+| ✅ live+verifiziert (2026-07-05) | **B-3 Defense-in-Depth**: `email_notification_queue` alle Client-Grants entzogen (RLS war schon deny-all); `key_backups` für `authenticated` auf exakt SELECT/INSERT/UPDATE/DELETE reduziert (owner-scoped via RLS, App braucht alle vier — ein SELECT-Entzug würde `fetchKeyBackup` brechen); schemaweit TRUNCATE/REFERENCES/TRIGGER von `anon`/`authenticated` entzogen (**TRUNCATE unterliegt nicht RLS**); `has_file_access`/`reset_unread_count` EXECUTE von `anon`/`public` entzogen. Als `authenticated` gegengeprüft: `key_backups` weiter abfragbar, Queue-SELECT-Privileg weg, RPCs für `authenticated` intakt. Frischer Advisor-Lauf: keine ERROR, nur bekannte WARNs (GraphQL-Sichtbarkeit RLS-gedeckt, HIBP = Pro-only). | B-3 |
 
 **Noch offen:**
 
@@ -194,8 +195,7 @@ Offene Handlungspunkte (die live-verifizierten B-Punkte B-1/B-4/B-6 waren unkrit
 | 2 | **A-1** Schlüssel-Fingerprint/Verify-Flow gegen Server-MITM (UI + lokales Pinning) | A-1 |
 | 3 | **A-2** Nachrichten signieren (Authentizität) — Protokolländerung, neues Signatur-Keypair + Migration | A-2 |
 | 3 | Optional HIBP-Passwortabgleich (bräuchte `connect-src`-Ausnahme für `api.pwnedpasswords.com`) | A-5 |
-| 3 | Defense-in-Depth: `REVOKE SELECT` auf `key_backups`/`email_notification_queue` von `authenticated` | B-3 |
-| 3 | E-Mail-Bestätigung/Rate-Limits im Auth-Dashboard prüfen | B-2 |
+| 3 | E-Mail-Bestätigung/Rate-Limits im Auth-Dashboard prüfen (nur manuell, nicht per MCP sichtbar) | B-2 |
 | 4 | Forward Secrecy / Ratcheting evaluieren; Metadaten-Grenze dokumentieren | A-7, A-10 |
 
 ---
