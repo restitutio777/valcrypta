@@ -30,8 +30,10 @@ Architektur in einem Satz: RSA-OAEP-2048-Langzeitschlüssel pro Nutzer; Nachrich
 
 Schweregrade: **Kritisch** · **Hoch** · **Mittel** · **Niedrig** · **Info**
 
-### A-1 · Hoch · Keine Schlüssel-Authentifizierung → Server-MITM bricht das E2E-Versprechen
+### A-1 · Hoch · Keine Schlüssel-Authentifizierung → Server-MITM bricht das E2E-Versprechen — ✅ behoben
 **Ort:** `src/components/Chat/ChatArea.tsx:166` (`importPublicKey(activeContact.public_key)`), `supabase/init.sql` (`users.public_key`, UPDATE-Policy)
+
+> **Status (behoben):** TOFU-Pinning in `src/lib/key-pinning.ts` — der Kontakt-Schlüssel wird beim ersten Chat-Öffnen gerätelokal gepinnt (IndexedDB `pinned_keys`, pro lokalem Nutzer). Weicht der Server-Schlüssel vom Pin ab, zeigt `ChatArea` ein Warnbanner mit alter/neuer Kennung und **blockiert das Senden**, bis der Nutzer den neuen Schlüssel explizit bestätigt (nur das re-pinnt). Die TopBar bietet ein Fingerprint-Prüfmodal (SHA-256 über SPKI, 16 Hex-Vierergruppen) für den Abgleich über einen zweiten Kanal.
 
 Beim Senden wird der Public Key des Empfängers **direkt aus der `users`-Tabelle** geladen und ohne jede Prüfung zum Verschlüsseln benutzt. Es gibt kein Fingerprint-/Safety-Number-Verfahren, keine „Schlüssel hat sich geändert"-Warnung, kein TOFU-Pinning. Ein bösartiger oder kompromittierter Server (bzw. jemand mit Schreibrechten auf `users`) kann den Public Key eines Kontakts durch einen selbst kontrollierten Schlüssel ersetzen und damit **alle Nachrichten unbemerkt mitlesen** (klassischer MITM). Genau gegen diesen Angreifer soll E2E schützen.
 
@@ -188,11 +190,12 @@ Offene Handlungspunkte (die live-verifizierten B-Punkte B-1/B-4/B-6 waren unkrit
 | ✅ dieser PR | **A-3** Entsperrter Key nie mehr Klartext at rest: comfort = non-extractable `CryptoKey` in IndexedDB, balanced = AES-GCM-Split (Ciphertext in `sessionStorage`, non-extractable Wrapping-Key in IndexedDB), Stufenwechsel mit Passwort-Neueingabe, Legacy-Migration beim Restore (24 Browser-Tests) | A-3 |
 | ✅ live+verifiziert (2026-07-05) | **B-3 Defense-in-Depth**: `email_notification_queue` alle Client-Grants entzogen (RLS war schon deny-all); `key_backups` für `authenticated` auf exakt SELECT/INSERT/UPDATE/DELETE reduziert (owner-scoped via RLS, App braucht alle vier — ein SELECT-Entzug würde `fetchKeyBackup` brechen); schemaweit TRUNCATE/REFERENCES/TRIGGER von `anon`/`authenticated` entzogen (**TRUNCATE unterliegt nicht RLS**); `has_file_access`/`reset_unread_count` EXECUTE von `anon`/`public` entzogen. Als `authenticated` gegengeprüft: `key_backups` weiter abfragbar, Queue-SELECT-Privileg weg, RPCs für `authenticated` intakt. Frischer Advisor-Lauf: keine ERROR, nur bekannte WARNs (GraphQL-Sichtbarkeit RLS-gedeckt, HIBP = Pro-only). | B-3 |
 
+| ✅ live (PR #16) | **A-1** TOFU-Key-Pinning (gerätelokal, Mismatch überschreibt Pin nicht), „Schlüssel geändert"-Warnbanner mit Sende-Sperre bis zur Bestätigung, Fingerprint-Prüfmodal (SHA-256/SPKI); 34 Browser-Tests inkl. IndexedDB-Upgrade v2→v3 ohne Datenverlust | A-1 |
+
 **Noch offen:**
 
 | Prio | Maßnahme | Bezug |
 |------|----------|-------|
-| 2 | **A-1** Schlüssel-Fingerprint/Verify-Flow gegen Server-MITM (UI + lokales Pinning) | A-1 |
 | 3 | **A-2** Nachrichten signieren (Authentizität) — Protokolländerung, neues Signatur-Keypair + Migration | A-2 |
 | 3 | Optional HIBP-Passwortabgleich (bräuchte `connect-src`-Ausnahme für `api.pwnedpasswords.com`) | A-5 |
 | 3 | E-Mail-Bestätigung/Rate-Limits im Auth-Dashboard prüfen (nur manuell, nicht per MCP sichtbar) | B-2 |
