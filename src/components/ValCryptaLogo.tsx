@@ -16,7 +16,7 @@ export default function ValCryptaLogo({ size = 'md', showText = true }: ValCrypt
   const { box, text } = sizes[size];
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-1.5">
       <svg className={box} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="11" className="fill-ink-900 dark:fill-porcelain-100" />
         <path
