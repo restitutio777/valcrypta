@@ -76,6 +76,7 @@ Der Private Key wird mit **PBKDF2-HMAC-SHA256, 100 000 Iterationen** gewrappt. D
 
 ### A-6 · Mittel · Keine Content-Security-Policy; Runtime-Abhängigkeit von externen CDNs
 **Ort:** `index.html` (kein CSP-Meta), kein `vercel.json`/`public/_headers`; externe Fonts von `api.fontshare.com`, `cdn.fontshare.com`, `fonts.googleapis.com`, `fonts.gstatic.com`
+**Live bestätigt (2026-07-05, `curl -I https://valcrypta.vercel.app`):** Von den Security-Headern ist **nur `Strict-Transport-Security`** gesetzt (`max-age=63072000; includeSubDomains; preload` — gut). **Fehlend: `Content-Security-Policy`, `X-Frame-Options`/`frame-ancestors`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.** Zusätzlich liefert die HTML-Antwort `access-control-allow-origin: *`.
 
 Es gibt **keinerlei CSP** (weder Header noch Meta) und keine Trusted-Types. In Kombination mit den extrahierbaren In-Memory-Schlüsseln (A-3) bedeutet jede XSS- oder Supply-Chain-Kompromittierung (auch über die eingebundenen Dritt-CDNs) potenziell **vollständige Schlüssel-Exfiltration**. Positiv: Im aktuellen Code fand ich **keine gefährlichen Sinks** (`dangerouslySetInnerHTML`, `innerHTML`, `eval`, `document.write` — alle nicht vorhanden), und React escaped Standardausgaben. Das Risiko ist also v. a. Defense-in-Depth und Supply-Chain, nicht ein akuter reflektierter XSS.
 
@@ -118,29 +119,33 @@ Der (vom Sender kontrollierte) entschlüsselte Dateiname wird als `a.download` g
 
 Diese Punkte lassen sich aus dem Repo **nicht** abschließend beurteilen und müssen aktiv verifiziert werden. Empfohlen: über die Supabase-MCP-Tools bzw. das Dashboard.
 
-### B-1 · RLS der produktiven Zusatztabellen (hohe Priorität)
+> **⚠️ Blocker beim Live-Check (2026-07-05):** Das über die Supabase-MCP-Verbindung erreichbare Projekt (`auvmdkzulyrvhfylfjpy`, „bolt-native-database…") enthält **keine ValCrypta-Tabelle** — kein `messages`, `users`, `contacts`, `key_backups`. Stattdessen liegen dort 42 Tabellen einer **völlig anderen App** (Clubs/Playgrounds/Events/Wettbewerbe). Da die deployte ValCrypta als funktionierender Messenger zwingend eine `messages`-Tabelle braucht, nutzt sie ein **anderes** Supabase-Projekt, das über diese Verbindung nicht erreichbar ist. Die echte ValCrypta-URL steht nur in der gitignored `.env`/den Vercel-Env-Vars und war hier nicht einsehbar.
+> **Konsequenz:** B-1, B-2, B-3, B-6 konnten **nicht am echten ValCrypta-Backend** verifiziert werden. Zum Abschluss wird entweder die MCP-Verbindung zum richtigen Projekt oder dessen Project-Ref benötigt.
+> **Nebenbefund (nicht ValCrypta):** Das erreichbare Fremd-Projekt hat 196 Security-Lints, u. a. `SECURITY DEFINER`-Funktionen wie `admin_delete_user`/`admin_delete_club`, die per `anon`-Rolle via `/rest/v1/rpc/...` ausführbar sind, eine RLS-INSERT-Policy mit `WITH CHECK (true)`, deaktivierten Leaked-Password-Schutz, aktivierte anonyme Anmeldungen und öffentliche Buckets mit Listing. Falls dieses Projekt ebenfalls dem Betreiber gehört, sollte es separat gehärtet werden — es ist aber **nicht** die Datenbasis dieser App.
+
+### B-1 · RLS der produktiven Zusatztabellen (hohe Priorität) — ⛔ offen (falsches Projekt erreichbar)
 `supabase/init.sql:253-256` weist ausdrücklich darauf hin, dass in Produktion weitere Tabellen existieren, die **nicht im Repo** sind:
 `typing_status`, `unread_counts`, `notification_settings`, `email_notification_queue`.
 Diese sind **ungeprüft**. Besonders `email_notification_queue` kann Metadaten (wer-schrieb-wem, wann) und E-Mail-Adressen enthalten.
 **Zu tun:** `list_tables` + `get_advisors(type=security)`; für jede Tabelle prüfen: RLS aktiv? Policies korrekt (owner-scoped)? Trigger/Funktionen `SECURITY DEFINER` mit gepinntem `search_path`? Wird dort Klartext gespeichert?
 
-### B-2 · Supabase-Auth-Konfiguration
+### B-2 · Supabase-Auth-Konfiguration — ⛔ offen (falsches Projekt erreichbar)
 - E-Mail-Bestätigung aktiv? (Der Signup-Code erwartet eine sofortige Session — deutet auf **deaktivierte Bestätigung** hin → Account-Squatting/Spam möglich.)
 - „Leaked Password Protection" aktiv?
 - Rate-Limits für Login/Signup/OTP.
 - JWT-Ablaufzeit, Refresh-Token-Rotation.
 - Zulässige Redirect-URLs / Site-URL korrekt eingegrenzt.
 
-### B-3 · Supabase Security Advisors
+### B-3 · Supabase Security Advisors — ⛔ offen (falsches Projekt erreichbar)
 `get_advisors(type=security)` und `(type=performance)` laufen lassen; alle „security"-Findings adressieren (fehlende RLS, `SECURITY DEFINER`-Views, exponierte Extensions etc.).
 
-### B-4 · HTTP-Security-Header live prüfen
-Response-Header der Vercel-Deployment prüfen (CSP, HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`). Aktuell erwartungsgemäß **nicht gesetzt** (kein `vercel.json`/`_headers`) — s. A-6.
+### B-4 · HTTP-Security-Header live prüfen — ✅ erledigt (2026-07-05)
+Live geprüft an `https://valcrypta.vercel.app`. Ergebnis: **nur `Strict-Transport-Security` vorhanden** (2 Jahre, includeSubDomains, preload). **Fehlend: CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.** HTML-Antwort mit `access-control-allow-origin: *`. → Umsetzung siehe A-6.
 
 ### B-5 · Dependency-/Supply-Chain-Audit
 `npm audit` / `npm outdated` ausführen; `@supabase/supabase-js`, `vite`, `zustand`, `lucide-react`, `react` auf bekannte CVEs prüfen. Lockfile-Integrität sicherstellen. Externe Font-CDNs (A-6) als Supply-Chain-Fläche bewerten.
 
-### B-6 · Storage-Bucket-Einstellungen
+### B-6 · Storage-Bucket-Einstellungen — ⛔ offen (falsches Projekt erreichbar)
 Bestätigen, dass `encrypted_files` **privat** ist (SQL sagt `public=false`) und keine öffentlichen/signierten URLs mit zu langer Gültigkeit erzeugt werden. Max. Objektgröße/Bucket-Limits serverseitig (Client erzwingt nur 25 MB).
 
 ### B-7 · Geheimnis-/Konfig-Hygiene
