@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ArrowLeft, ShieldCheck, Settings2, X, Fingerprint } from 'lucide-react';
+import { ArrowLeft, Settings2, X, Fingerprint } from 'lucide-react';
+import ValCryptaLogo from '../ValCryptaLogo';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
@@ -57,11 +58,8 @@ export default function TopBar() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2 px-2">
-            <ShieldCheck className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold text-warm-800 dark:text-warm-50">
-              ValCrypta
-            </h2>
+          <div className="px-2">
+            <ValCryptaLogo size="sm" showText={true} />
           </div>
         )}
       </div>
@@ -119,6 +117,12 @@ export default function TopBar() {
                 </p>
               </div>
             </div>
+            <button
+              onClick={() => setVerifyFps(null)}
+              className="btn-primary mt-5 w-full py-2.5"
+            >
+              {keyVerify.verifyClose}
+            </button>
           </div>
         </div>
       )}

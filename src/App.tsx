@@ -10,6 +10,7 @@ import UnlockPage from './components/Auth/UnlockPage';
 import ChatLayout from './components/Chat/ChatLayout';
 import EncryptionInfoModal from './components/EncryptionInfoModal';
 import Notification from './components/Notification';
+import InstallPrompt from './components/InstallPrompt';
 
 function App() {
   const [authView, setAuthView] = useState<'landing' | 'login' | 'signup'>('landing');
@@ -88,6 +89,7 @@ function App() {
         ) : (
           <SignupPage onSwitchToLogin={() => setAuthView('login')} />
         )}
+        <InstallPrompt />
       </>
     );
   }
@@ -104,6 +106,7 @@ function App() {
       <EncryptionInfoModal />
       <SecuritySettingsModal />
       <Notification />
+      <InstallPrompt />
     </>
   );
 }

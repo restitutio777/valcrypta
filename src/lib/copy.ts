@@ -253,7 +253,16 @@ export const keyVerify = {
     'Jeder Schlüssel hat eine eindeutige Kennung. Lest euch die Kennungen gegenseitig über einen anderen Kanal vor (Anruf, persönlich): Stimmen beide überein, kann sich niemand — auch nicht der Server — dazwischengeschaltet haben.',
   verifyMine: 'Deine Kennung',
   verifyTheirs: (name: string) => `Kennung von „${name}"`,
+  verifyClose: 'Verstanden',
   errCheck: 'Schlüssel-Prüfung fehlgeschlagen',
+} as const;
+
+export const pwa = {
+  title: 'ValCrypta installieren',
+  body: 'Füge ValCrypta zum Startbildschirm hinzu — es öffnet wie eine App, im eigenen Fenster.',
+  bodyIos: 'Zum Installieren: unten auf „Teilen" tippen, dann „Zum Home-Bildschirm".',
+  install: 'Installieren',
+  dismiss: 'Nicht jetzt',
 } as const;
 
 export const sidebar = {
