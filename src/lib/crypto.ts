@@ -1,4 +1,16 @@
-const PBKDF2_ITERATIONS = 100000;
+// PBKDF2 work factor for NEW private-key wraps. Raised from the original
+// 100k to 600k (OWASP 2023 guidance for PBKDF2-HMAC-SHA256) because the
+// wrapped blob is also uploaded to the cloud key backup, where a weak factor
+// invites offline brute force. Old blobs stay readable via the legacy path in
+// decryptPrivateKey (they carry no version marker), so this never locks out an
+// existing account — their key is simply re-wrapped at the new factor the next
+// time it is encrypted.
+const PBKDF2_ITERATIONS = 600000;
+const LEGACY_PBKDF2_ITERATIONS = 100000;
+// Defensive clamp so a corrupt/hostile version-2 blob can't request a work
+// factor large enough to hang the tab.
+const MIN_ITERATIONS = 100000;
+const MAX_ITERATIONS = 2000000;
 const SALT_LENGTH = 16;
 const IV_LENGTH = 12;
 
@@ -55,7 +67,8 @@ export async function importPrivateKey(privateKeyString: string): Promise<Crypto
 
 export async function deriveKeyFromPassword(
   password: string,
-  salt: Uint8Array<ArrayBuffer>
+  salt: Uint8Array<ArrayBuffer>,
+  iterations: number = PBKDF2_ITERATIONS
 ): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const passwordKey = await crypto.subtle.importKey(
@@ -70,7 +83,7 @@ export async function deriveKeyFromPassword(
     {
       name: 'PBKDF2',
       salt: salt,
-      iterations: PBKDF2_ITERATIONS,
+      iterations: iterations,
       hash: 'SHA-256',
     },
     passwordKey,
@@ -80,55 +93,87 @@ export async function deriveKeyFromPassword(
   );
 }
 
+// Wrapped-key format (v2): a self-describing JSON envelope that records the
+// PBKDF2 iteration count, so the work factor can be raised over time without
+// breaking older blobs. Legacy blobs are raw base64 of salt||iv||ciphertext at
+// LEGACY_PBKDF2_ITERATIONS and carry no marker; decryptPrivateKey falls back to
+// that when the input is not v2 JSON.
+interface WrappedKeyPayload {
+  v: 2;
+  iter: number;
+  salt: string;
+  iv: string;
+  ct: string;
+}
+
 export async function encryptPrivateKey(
   privateKeyString: string,
   password: string
 ): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
   const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
-  const aesKey = await deriveKeyFromPassword(password, salt);
+  const aesKey = await deriveKeyFromPassword(password, salt, PBKDF2_ITERATIONS);
 
   const enc = new TextEncoder();
   const encrypted = await crypto.subtle.encrypt(
-    {
-      name: 'AES-GCM',
-      iv: iv,
-    },
+    { name: 'AES-GCM', iv },
     aesKey,
     enc.encode(privateKeyString)
   );
 
-  const result = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-  result.set(salt, 0);
-  result.set(iv, salt.length);
-  result.set(new Uint8Array(encrypted), salt.length + iv.length);
-
-  return arrayBufferToBase64(result.buffer);
+  const payload: WrappedKeyPayload = {
+    v: 2,
+    iter: PBKDF2_ITERATIONS,
+    salt: arrayBufferToBase64(salt.buffer),
+    iv: arrayBufferToBase64(iv.buffer),
+    ct: arrayBufferToBase64(encrypted),
+  };
+  return JSON.stringify(payload);
 }
 
 export async function decryptPrivateKey(
   encryptedData: string,
   password: string
 ): Promise<string> {
+  const dec = new TextDecoder();
+
+  // v2 self-describing envelope.
+  let payload: WrappedKeyPayload | null = null;
+  try {
+    const parsed = JSON.parse(encryptedData);
+    if (parsed && parsed.v === 2) payload = parsed as WrappedKeyPayload;
+  } catch {
+    // Not JSON: legacy base64 blob, handled below.
+  }
+
+  if (payload) {
+    const iterations = Math.min(
+      Math.max(payload.iter | 0, MIN_ITERATIONS),
+      MAX_ITERATIONS
+    );
+    const salt = new Uint8Array(base64ToArrayBuffer(payload.salt));
+    const aesKey = await deriveKeyFromPassword(password, salt, iterations);
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: base64ToArrayBuffer(payload.iv) },
+      aesKey,
+      base64ToArrayBuffer(payload.ct)
+    );
+    return dec.decode(decrypted);
+  }
+
+  // Legacy: base64(salt || iv || ciphertext) wrapped at 100k iterations.
   const data = base64ToArrayBuffer(encryptedData);
   const dataView = new Uint8Array(data);
-
   const salt = dataView.slice(0, SALT_LENGTH);
   const iv = dataView.slice(SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
   const encrypted = dataView.slice(SALT_LENGTH + IV_LENGTH);
 
-  const aesKey = await deriveKeyFromPassword(password, salt);
-
+  const aesKey = await deriveKeyFromPassword(password, salt, LEGACY_PBKDF2_ITERATIONS);
   const decrypted = await crypto.subtle.decrypt(
-    {
-      name: 'AES-GCM',
-      iv: iv,
-    },
+    { name: 'AES-GCM', iv },
     aesKey,
     encrypted
   );
-
-  const dec = new TextDecoder();
   return dec.decode(decrypted);
 }
 

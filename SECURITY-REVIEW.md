@@ -173,18 +173,28 @@ Offene Handlungspunkte (die live-verifizierten B-Punkte B-1/B-4/B-6 waren unkrit
 
 | Prio | Maßnahme | Bezug |
 |------|----------|-------|
-| ✅ | **A-4 umgesetzt** (dieser PR): Frontend liest keine `email` mehr aus `users`; Migration entzieht das **tabellenweite** SELECT und grantet nur `id, username, public_key, created_at` (ein spaltenweiser `REVOKE` allein ist wirkungslos — live verifiziert). **⚠️ Migration erst NACH dem Frontend-Deploy anwenden** (sonst `42501` für den alten Client — live verifiziert). | A-4 |
-| ✅ | **A-6 umgesetzt** (dieser PR): `vercel.json` mit strikter CSP + `X-Content-Type-Options`/`X-Frame-Options`/`Referrer-Policy`/`Permissions-Policy`/HSTS | A-6, B-4 |
-| 2 | Entsperrten Key non-extractable speichern statt Klartext-PKCS8 | A-3 |
-| 2 | Schlüssel-Fingerprint/Verify-Flow gegen Server-MITM | A-1 |
-| 2 | KDF härten (≥600k PBKDF2 / Argon2id) + Passwortlänge + **client-seitiger** HIBP-Check (Server-Schutz ist Pro-only) | A-5 |
-| 2 | E-Mail-Bestätigung/Rate-Limits im Auth-Dashboard prüfen | B-2 |
-| 3 | Nachrichten signieren (Authentizität) | A-2 |
-| 3 | `messages`-UPDATE auf `read_at` einschränken | A-8 |
-| 3 | `has_file_access` auf `auth.uid()` umstellen (Orakel schließen) | A-12 |
+**✅ Erledigt & live in Produktion (PR #10 + dieser PR):**
+
+| Status | Maßnahme | Bezug |
+|------|----------|-------|
+| ✅ live+verifiziert | **A-4** E-Mail-PII: Frontend liest keine `email` mehr; Migration entzieht tabellenweites SELECT, grantet nur `id, username, public_key, created_at`. Als `authenticated` verifiziert: erlaubte Spalten ok, `email` → `42501`. | A-4 |
+| ✅ live | **A-6** `vercel.json` mit strikter CSP + `X-Content-Type-Options`/`X-Frame-Options`/`Referrer-Policy`/`Permissions-Policy`/HSTS (alle Header live bestätigt) | A-6, B-4 |
+| ✅ dieser PR | **A-5** KDF auf 600k PBKDF2 (versioniertes, abwärtskompatibles Blob-Format — Legacy-100k entschlüsselt weiter, per Test verifiziert) + Passwort-Mindestlänge 12 | A-5 |
+| ✅ dieser PR | **A-8** `messages`-UPDATE auf Spalte `read_at` eingeschränkt (Migration; App macht kein `.update`) | A-8 |
+| ✅ dieser PR | **A-9** Download-Dateiname sanitisiert | A-9 |
+| ✅ dieser PR | **A-12** `has_file_access` nutzt intern `auth.uid()` (Orakel geschlossen; Migration + `init.sql`) | A-12 |
+
+**Noch offen:**
+
+| Prio | Maßnahme | Bezug |
+|------|----------|-------|
+| 2 | **A-3** Entsperrten Key non-extractable speichern — braucht Redesign: der „Sicherheitsstufe wechseln"-Flow benötigt aktuell einen **exportierbaren** In-Memory-Key, ein non-extractable-Storage kollidiert damit. Nicht ohne saubere Umgestaltung shippen. | A-3 |
+| 2 | **A-1** Schlüssel-Fingerprint/Verify-Flow gegen Server-MITM (UI + lokales Pinning) | A-1 |
+| 3 | **A-2** Nachrichten signieren (Authentizität) — Protokolländerung, neues Signatur-Keypair + Migration | A-2 |
+| 3 | Optional HIBP-Passwortabgleich (bräuchte `connect-src`-Ausnahme für `api.pwnedpasswords.com`) | A-5 |
 | 3 | Defense-in-Depth: `REVOKE SELECT` auf `key_backups`/`email_notification_queue` von `authenticated` | B-3 |
-| 3 | Dependency-Audit, Dateinamen sanitisieren, Metadaten-Grenze dokumentieren | B-5, A-9, A-10 |
-| 4 | Forward Secrecy / Ratcheting evaluieren | A-7 |
+| 3 | E-Mail-Bestätigung/Rate-Limits im Auth-Dashboard prüfen | B-2 |
+| 4 | Forward Secrecy / Ratcheting evaluieren; Metadaten-Grenze dokumentieren | A-7, A-10 |
 
 ---
 

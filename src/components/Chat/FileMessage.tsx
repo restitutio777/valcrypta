@@ -14,6 +14,20 @@ interface FileMessageProps {
   isOwn: boolean;
 }
 
+// The filename comes from sender-controlled decrypted metadata. Strip path
+// separators and control characters and cap the length before handing it to
+// the browser download so it can't be used to smuggle a misleading path.
+function sanitizeFilename(name: string): string {
+  const cleaned = (name || 'download')
+    .replace(/[/\\]/g, '_')
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\x00-\x1f\x7f]/g, '')
+    .replace(/^\.+/, '')
+    .trim()
+    .slice(0, 200);
+  return cleaned || 'download';
+}
+
 function formatBytes(bytes: number | null): string {
   if (!bytes || bytes <= 0) return '';
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -79,7 +93,7 @@ export default function FileMessage({
       const url = URL.createObjectURL(new Blob([bytes], { type: fileType }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = fileName || 'download';
+      a.download = sanitizeFilename(fileName);
       document.body.appendChild(a);
       a.click();
       a.remove();
