@@ -99,6 +99,7 @@ export const signup = {
   toLogin: 'Anmelden',
   errMismatch: 'Die Passwörter stimmen nicht überein',
   errWeak: 'Das Passwort ist zu schwach. Bitte wähle ein stärkeres.',
+  errShort: 'Das Passwort braucht mindestens 12 Zeichen',
   errUsername: 'Der Nutzername braucht mindestens 3 Zeichen',
   errFailed: 'Registrierung fehlgeschlagen',
   errSession: 'Sitzung nicht hergestellt. Bitte melde dich an.',

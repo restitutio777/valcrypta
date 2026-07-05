@@ -205,7 +205,10 @@ ON CONFLICT (id) DO NOTHING;
 -- Access check for downloads: a caller may read an object only if a messages
 -- row references it as file_url and names them as sender or recipient.
 -- SECURITY DEFINER so the storage SELECT policy can read the messages table.
-CREATE OR REPLACE FUNCTION public.has_file_access(file_path text, user_id uuid)
+-- The identity is taken from auth.uid() inside the function (not a parameter) so
+-- it can't be called as an oracle for other users' access — see
+-- supabase/migrations/20260705130100_has_file_access_use_auth_uid.sql.
+CREATE OR REPLACE FUNCTION public.has_file_access(file_path text)
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -215,7 +218,7 @@ BEGIN
   RETURN EXISTS (
     SELECT 1 FROM public.messages
     WHERE file_url = file_path
-      AND (sender_id = user_id OR recipient_id = user_id)
+      AND (sender_id = auth.uid() OR recipient_id = auth.uid())
   );
 END;
 $$;
@@ -237,7 +240,7 @@ CREATE POLICY "Users can view accessible files"
   TO authenticated
   USING (
     bucket_id = 'encrypted_files'
-    AND has_file_access(name, auth.uid())
+    AND has_file_access(name)
   );
 
 DROP POLICY IF EXISTS "Users can delete own files" ON storage.objects;

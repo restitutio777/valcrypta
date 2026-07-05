@@ -41,6 +41,11 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       return;
     }
 
+    if (password.length < 12) {
+      setError(signup.errShort);
+      return;
+    }
+
     if (passwordStrength.score < 3) {
       setError(signup.errWeak);
       return;
@@ -186,7 +191,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
                 className="input-field py-3 pl-11 pr-12"
                 placeholder="••••••••"
                 required
-                minLength={8}
+                minLength={12}
               />
               <button
                 type="button"
