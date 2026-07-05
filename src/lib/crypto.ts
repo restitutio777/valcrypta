@@ -51,6 +51,9 @@ export async function importPublicKey(publicKeyString: string): Promise<CryptoKe
   );
 }
 
+// Non-extractable: every imported private key is only ever *used* (decrypt),
+// never re-exported. Persisting flows work from the PKCS8 string instead, so
+// script access (e.g. XSS) can never pull the key material out of a live key.
 export async function importPrivateKey(privateKeyString: string): Promise<CryptoKey> {
   const keyData = base64ToArrayBuffer(privateKeyString);
   return await crypto.subtle.importKey(
@@ -60,7 +63,7 @@ export async function importPrivateKey(privateKeyString: string): Promise<Crypto
       name: 'RSA-OAEP',
       hash: 'SHA-256',
     },
-    true,
+    false,
     ['decrypt']
   );
 }
@@ -366,7 +369,7 @@ export async function decryptFile(
   return await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, aesKey, ct);
 }
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
   for (let i = 0; i < bytes.byteLength; i++) {
@@ -375,7 +378,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
+export function base64ToArrayBuffer(base64: string): ArrayBuffer {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
