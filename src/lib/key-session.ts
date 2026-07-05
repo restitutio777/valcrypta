@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { arrayBufferToBase64, base64ToArrayBuffer, importPrivateKey } from './crypto';
+import { idbPut, idbGet, idbDelete } from './db';
 
 // The user picks how much convenience they trade for security:
 //  - maximum:  key lives in memory only; every page load asks for the
@@ -27,9 +28,6 @@ const SESSION_KEY_PREFIX = 'valcrypta_unlocked_';
 const WRAP_KEY_PREFIX = 'wrap_';
 const WRAP_IV_LENGTH = 12;
 
-const DB_NAME = 'ValCryptaDB';
-const DB_VERSION = 2;
-const KEYS_STORE = 'keys';
 const UNLOCKED_STORE = 'unlocked_keys';
 
 // sessionStorage payload for the balanced level. Legacy entries are the raw
@@ -38,58 +36,6 @@ interface WrappedSessionPayload {
   v: 2;
   iv: string;
   ct: string;
-}
-
-function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(KEYS_STORE)) {
-        db.createObjectStore(KEYS_STORE);
-      }
-      if (!db.objectStoreNames.contains(UNLOCKED_STORE)) {
-        db.createObjectStore(UNLOCKED_STORE);
-      }
-    };
-  });
-}
-
-function idbPut(store: string, key: string, value: unknown): Promise<void> {
-  return openDatabase().then(
-    (db) =>
-      new Promise((resolve, reject) => {
-        const request = db.transaction([store], 'readwrite').objectStore(store).put(value, key);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-      })
-  );
-}
-
-function idbGet(store: string, key: string): Promise<unknown> {
-  return openDatabase().then(
-    (db) =>
-      new Promise((resolve, reject) => {
-        const request = db.transaction([store], 'readonly').objectStore(store).get(key);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result ?? null);
-      })
-  );
-}
-
-function idbDelete(store: string, key: string): Promise<void> {
-  return openDatabase().then(
-    (db) =>
-      new Promise((resolve, reject) => {
-        const request = db.transaction([store], 'readwrite').objectStore(store).delete(key);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-      })
-  );
 }
 
 function parseWrappedSessionPayload(raw: string): WrappedSessionPayload | null {

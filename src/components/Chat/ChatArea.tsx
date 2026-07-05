@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Lock, MessageSquare, ShieldCheck, Paperclip, Trash2 } from 'lucide-react';
+import { Send, Lock, MessageSquare, ShieldCheck, ShieldAlert, Paperclip, Trash2 } from 'lucide-react';
 import { supabase, Database } from '../../lib/supabase';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { encryptMessage, decryptMessage, importPublicKey } from '../../lib/crypto';
+import { checkAndPinContactKey, acceptContactKey, computeFingerprint } from '../../lib/key-pinning';
 import { sendFile, deleteMessage, MAX_FILE_SIZE, FileTooLargeError, FileMeta } from '../../lib/files';
 import { useUIStore } from '../../stores/ui-store';
 import FileMessage from './FileMessage';
-import { chat } from '../../lib/copy';
+import { chat, keyVerify } from '../../lib/copy';
 
 type MessageRow = Database['public']['Tables']['messages']['Row'];
 
@@ -16,6 +17,10 @@ export default function ChatArea() {
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  // A-1 key pinning: 'changed' blocks sending until the user explicitly
+  // trusts the contact's new public key.
+  const [keyStatus, setKeyStatus] = useState<'checking' | 'ok' | 'changed'>('checking');
+  const [keyChange, setKeyChange] = useState<{ oldFp: string; newFp: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +43,53 @@ export default function ChatArea() {
       return cleanup;
     }
   }, [activeContact, user, privateKey]);
+
+  // Pin the contact's public key on first sight and warn loudly when it
+  // differs from the pinned one (possible server-side key swap / MITM).
+  useEffect(() => {
+    let cancelled = false;
+    setKeyStatus('checking');
+    setKeyChange(null);
+    if (!activeContact || !user) return;
+
+    (async () => {
+      try {
+        const result = await checkAndPinContactKey(user.id, activeContact.id, activeContact.public_key);
+        if (cancelled) return;
+        if (result.status === 'changed') {
+          const [oldFp, newFp] = await Promise.all([
+            computeFingerprint(result.pinnedKey),
+            computeFingerprint(activeContact.public_key),
+          ]);
+          if (cancelled) return;
+          setKeyChange({ oldFp, newFp });
+          setKeyStatus('changed');
+        } else {
+          setKeyStatus('ok');
+        }
+      } catch (error) {
+        // Fail open: pinning is an added defense; a broken IndexedDB must
+        // not brick messaging (pre-pinning behavior was no check at all).
+        console.error('Key pinning check failed:', error);
+        if (!cancelled) setKeyStatus('ok');
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeContact, user]);
+
+  const handleAcceptNewKey = async () => {
+    if (!activeContact || !user) return;
+    try {
+      await acceptContactKey(user.id, activeContact.id, activeContact.public_key);
+      setKeyChange(null);
+      setKeyStatus('ok');
+    } catch {
+      setNotification({ message: keyVerify.errCheck, type: 'error' });
+    }
+  };
 
   useEffect(() => {
     scrollToBottom();
@@ -159,6 +211,7 @@ export default function ChatArea() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || !activeContact || !user || !publicKey) return;
+    if (keyStatus !== 'ok') return;
 
     setIsSending(true);
 
@@ -196,6 +249,7 @@ export default function ChatArea() {
     const file = e.target.files?.[0];
     e.target.value = ''; // allow re-selecting the same file
     if (!file || !activeContact || !user || !publicKey) return;
+    if (keyStatus !== 'ok') return;
 
     if (file.size > MAX_FILE_SIZE) {
       setNotification({ message: chat.errFileTooLarge, type: 'error' });
@@ -371,6 +425,36 @@ export default function ChatArea() {
         <div ref={messagesEndRef} />
       </div>
 
+      {keyStatus === 'changed' && keyChange && (
+        <div className="animate-fade-in border-t border-amber-300/60 bg-amber-50 p-4 dark:border-amber-700/50 dark:bg-amber-900/20">
+          <div className="mx-auto flex max-w-2xl items-start gap-3">
+            <ShieldAlert className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="min-w-0 flex-1 text-sm text-amber-900 dark:text-amber-100">
+              <p className="font-semibold">{keyVerify.changedTitle}</p>
+              <p className="mt-1 leading-relaxed">{keyVerify.changedBody(activeContact.username)}</p>
+              <div className="mt-2 space-y-1 break-all font-mono text-[11px] leading-snug text-amber-800 dark:text-amber-200">
+                <p>
+                  <span className="font-sans font-medium">{keyVerify.changedOldLabel}: </span>
+                  {keyChange.oldFp}
+                </p>
+                <p>
+                  <span className="font-sans font-medium">{keyVerify.changedNewLabel}: </span>
+                  {keyChange.newFp}
+                </p>
+              </div>
+              <p className="mt-2 text-xs leading-relaxed">{keyVerify.changedHint}</p>
+              <button
+                type="button"
+                onClick={handleAcceptNewKey}
+                className="mt-3 rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-soft transition hover:bg-amber-700"
+              >
+                {keyVerify.changedAccept}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="safe-bottom border-t border-sage-100 bg-white/70 p-3 backdrop-blur-xl dark:border-ink-700/60 dark:bg-ink-900/80 sm:p-4">
         <form onSubmit={handleSendMessage} className="flex items-center gap-2">
           <input
@@ -382,7 +466,7 @@ export default function ChatArea() {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
+            disabled={isUploading || keyStatus !== 'ok'}
             className="btn-ghost-icon flex-shrink-0 disabled:opacity-50"
             title={chat.attach}
           >
@@ -409,7 +493,7 @@ export default function ChatArea() {
           />
           <button
             type="submit"
-            disabled={isSending || !message.trim()}
+            disabled={isSending || !message.trim() || keyStatus !== 'ok'}
             className="btn-primary flex h-12 w-12 flex-shrink-0 items-center justify-center !rounded-full"
             title={chat.send}
           >

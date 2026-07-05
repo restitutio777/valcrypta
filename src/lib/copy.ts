@@ -239,6 +239,23 @@ export const chat = {
   errFileTooLarge: 'Datei ist zu groß (max. 25 MB)',
 } as const;
 
+export const keyVerify = {
+  changedTitle: 'Achtung: Schlüssel hat sich geändert',
+  changedBody: (name: string) =>
+    `Der Verschlüsselungscode von „${name}" ist nicht mehr derselbe wie beim letzten Mal. Das kann harmlos sein (neues Konto, neues Gerät) — oder jemand versucht, sich dazwischenzuschalten. Zur Sicherheit ist das Senden blockiert, bis du den neuen Schlüssel bestätigst.`,
+  changedHint: 'Am sichersten: Vergleicht die neue Kennung über einen anderen Kanal (Anruf, persönlich), bevor du bestätigst.',
+  changedOldLabel: 'Bisherige Kennung',
+  changedNewLabel: 'Neue Kennung',
+  changedAccept: 'Neuen Schlüssel vertrauen',
+  verifyTooltip: 'Verschlüsselung prüfen',
+  verifyTitle: 'Verschlüsselung prüfen',
+  verifyBody:
+    'Jeder Schlüssel hat eine eindeutige Kennung. Lest euch die Kennungen gegenseitig über einen anderen Kanal vor (Anruf, persönlich): Stimmen beide überein, kann sich niemand — auch nicht der Server — dazwischengeschaltet haben.',
+  verifyMine: 'Deine Kennung',
+  verifyTheirs: (name: string) => `Kennung von „${name}"`,
+  errCheck: 'Schlüssel-Prüfung fehlgeschlagen',
+} as const;
+
 export const sidebar = {
   searchPlaceholder: 'Personen per Nutzername finden …',
   noUsers: 'Keine Nutzer gefunden',
