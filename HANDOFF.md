@@ -30,10 +30,11 @@
 | **A-3** | Entsperrter Key nie mehr Klartext at rest: `persistUnlockedKey` nimmt PKCS8-String; In-Memory-Keys non-extractable; comfort = non-extractable `CryptoKey` in IndexedDB, balanced = AES-GCM-Split (Ciphertext in sessionStorage + non-extractable Wrapping-Key `wrap_<uid>` in IndexedDB); Stufenwechsel fragt Passwort neu ab; Legacy-Klartext wird beim Restore migriert (kein Lockout). |
 | **B-3** | Defense-in-Depth-Grants: `email_notification_queue` alle Client-Grants weg; `key_backups` für `authenticated` nur noch SELECT/INSERT/UPDATE/DELETE (App braucht alle vier — SELECT NICHT entziehen, sonst bricht `fetchKeyBackup`); schemaweit TRUNCATE/REFERENCES/TRIGGER von `anon`/`authenticated` entzogen (TRUNCATE unterliegt nicht RLS); RPC-EXECUTE (`has_file_access`, `reset_unread_count`) von `anon`/`public` weg. Als `authenticated` gegengeprüft. |
 
+| **A-1** | TOFU-Key-Pinning (`src/lib/key-pinning.ts`, IndexedDB `pinned_keys`, gerätelokal pro Nutzer; Mismatch überschreibt Pin NICHT); „Schlüssel geändert"-Warnbanner in `ChatArea` mit Sende-Sperre bis zur expliziten Bestätigung; Fingerprint-Prüfmodal in `TopBar` (SHA-256 über SPKI, 16 Hex-Vierergruppen). IndexedDB jetzt v3 über gemeinsamen Öffner `src/lib/db.ts` (Upgrade erhält Bestandsdaten, 34 Browser-Tests). |
+
 Fünf DB-Migrationen sind in Prod angewendet und einzeln als `authenticated`-Rolle gegengeprüft. Bestandskonten können sich weiter anmelden (Legacy-Kompatibilität bewiesen; beide `key_backups`-Blobs sind Legacy-100k-Format, `decryptPrivateKey` liest das weiter).
 
 ### 🔓 Offen (nach Priorität)
-- **A-1 (Hoch)** — Kein Key-Verify → Server-MITM. Kontakt-Public-Key wird in `ChatArea.tsx` ungeprüft aus `users` geladen. Braucht Fingerprint-UI + lokales Pinning + „Schlüssel geändert"-Warnung.
 - **A-2 (Mittel-Hoch)** — Nachrichten unsigniert → Server kann fälschen/einschleusen. Braucht Signatur-Keypair pro Nutzer + Nachrichtenformat-Migration.
 - **A-7** Forward Secrecy (Design-Grenze) · **A-10** Metadaten serverseitig sichtbar (dokumentieren).
 - **B-2** Auth-Dashboard: E-Mail-Bestätigung/Rate-Limits (nur manuell im Supabase-Dashboard; Leaked-Password-Schutz ist Pro-only → auf Free n/a).
@@ -64,12 +65,15 @@ Wichtige Fakten, die du übernehmen musst:
 - Branch claude/security-review-plan-jjmqlw: PRs #10/#11 sind gemergt; für
   neue Arbeit frisch von origin/main aufsetzen, Draft-PR erstellen.
 
-Aufgabe: Nimm dir A-1 vor (kein Key-Verify → Server-MITM). Der Kontakt-Public-
-Key wird in ChatArea.tsx ungeprüft aus `users` geladen. Benötigt: Fingerprint-
-Anzeige (z. B. SHA-256 über SPKI, gruppiert darstellbar), lokales Pinning des
-zuletzt gesehenen Keys pro Kontakt (IndexedDB) und eine deutliche „Schlüssel
-hat sich geändert"-Warnung mit Bestätigen-Flow. Entwirf zuerst einen Plan und
-zeig ihn mir zur Freigabe, bevor du implementierst. Danach: implementieren,
-typecheck+build+Test, Draft-PR, mergen, deployen, live verifizieren (Login der
-2 Bestandskonten darf NICHT brechen).
+Aufgabe: Nimm dir A-2 vor (Nachrichten unsigniert → Server kann Nachrichten
+im Namen eines Kontakts fälschen/einschleusen). Benötigt: Signatur-Keypair
+pro Nutzer (z. B. ECDSA P-256 über WebCrypto, da Ed25519 nicht überall
+verfügbar), Public-Signing-Key in `users` veröffentlichen und ins A-1-Pinning
+einbeziehen, jede Nachricht signieren, empfängerseitig prüfen; Bestands-
+nachrichten bleiben unsigniert lesbar (versioniertes Format wie bisher).
+Achtung: Bestandskonten haben noch kein Signatur-Keypair — Erzeugung beim
+nächsten Login/Unlock nachziehen. Entwirf zuerst einen Plan und zeig ihn mir
+zur Freigabe, bevor du implementierst. Danach: implementieren, typecheck+
+build+Test, Draft-PR, mergen, deployen, live verifizieren (Login der 2
+Bestandskonten darf NICHT brechen).
 ```
