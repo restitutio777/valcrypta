@@ -27,11 +27,11 @@
 | **A-8** | Migration: `messages`-UPDATE auf Spalte `read_at` beschränkt (App macht kein `.update`). Als `authenticated` verifiziert. |
 | **A-9** | Download-Dateiname (`FileMessage.tsx`) sanitisiert. |
 | **A-12** | `has_file_access` nutzt intern `auth.uid()` statt Parameter (Orakel geschlossen); Storage-Policy + `init.sql` angepasst; alte 2-arg-Funktion entfernt. |
+| **A-3** | Entsperrter Key nie mehr Klartext at rest: `persistUnlockedKey` nimmt PKCS8-String; In-Memory-Keys non-extractable; comfort = non-extractable `CryptoKey` in IndexedDB, balanced = AES-GCM-Split (Ciphertext in sessionStorage + non-extractable Wrapping-Key `wrap_<uid>` in IndexedDB); Stufenwechsel fragt Passwort neu ab; Legacy-Klartext wird beim Restore migriert (kein Lockout). |
 
 Drei DB-Migrationen sind in Prod angewendet und einzeln als `authenticated`-Rolle gegengeprüft. Bestandskonten können sich weiter anmelden (Legacy-Kompatibilität bewiesen).
 
 ### 🔓 Offen (nach Priorität)
-- **A-3 (Hoch)** — Private Key liegt bei „balanced"/„comfort" **im Klartext** (PKCS8) in sessionStorage/IndexedDB. **Design-Blocker:** `persistUnlockedKey` (`src/lib/key-session.ts`) ruft `exportPrivateKey` → In-Memory-Key muss **extrahierbar** sein, damit der „Sicherheitsstufe wechseln"-Flow (`SecuritySettingsModal`) funktioniert. Non-extractable-Storage braucht Redesign: z. B. non-extractable `CryptoKey`-Objekt in IndexedDB für „comfort" + Passwort-Neueingabe/Re-Wrap beim Stufenwechsel; „balanced" separat (sessionStorage kann kein `CryptoKey` speichern).
 - **A-1 (Hoch)** — Kein Key-Verify → Server-MITM. Kontakt-Public-Key wird in `ChatArea.tsx` ungeprüft aus `users` geladen. Braucht Fingerprint-UI + lokales Pinning + „Schlüssel geändert"-Warnung.
 - **A-2 (Mittel-Hoch)** — Nachrichten unsigniert → Server kann fälschen/einschleusen. Braucht Signatur-Keypair pro Nutzer + Nachrichtenformat-Migration.
 - **A-7** Forward Secrecy (Design-Grenze) · **A-10** Metadaten serverseitig sichtbar (dokumentieren).

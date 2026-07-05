@@ -6,6 +6,7 @@ import {
   generateKeyPair,
   exportPublicKey,
   exportPrivateKey,
+  importPrivateKey,
   encryptPrivateKey,
   calculatePasswordStrength,
 } from '../../lib/crypto';
@@ -89,7 +90,11 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       if (securityLevel !== 'maximum') {
         uploadKeyBackup(authData.user.id, encryptedPrivateKey);
       }
-      await persistUnlockedKey(authData.user.id, keyPair.privateKey, securityLevel);
+      await persistUnlockedKey(authData.user.id, privateKeyString, securityLevel);
+
+      // The generated key is extractable (it had to be exported for
+      // wrapping); keep only a non-extractable copy in memory.
+      const sessionPrivateKey = await importPrivateKey(privateKeyString);
 
       // Upsert instead of insert: the database has a trigger that creates a
       // placeholder profile row on auth signup, so a plain insert collides.
@@ -109,7 +114,7 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
       }
 
       setUser(authData.user);
-      setKeys(publicKeyString, keyPair.privateKey);
+      setKeys(publicKeyString, sessionPrivateKey);
 
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : signup.errGeneric;

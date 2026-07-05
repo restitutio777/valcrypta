@@ -178,6 +178,12 @@ export const security = {
   notifyEnabled: (level: string) => `Stufe „${level}" aktiviert. Verschlüsseltes Backup gespeichert.`,
   notifyBackupFailed: 'Stufe geändert, aber das Cloud-Backup konnte gerade nicht gespeichert werden.',
   notifyError: 'Die Sicherheitsstufe konnte nicht geändert werden',
+  confirmPrompt: (level: string) =>
+    `Bestätige dein Passwort, um auf „${level}" zu wechseln. Dein Schlüssel wird dafür neu verschlüsselt abgelegt.`,
+  confirmSubmit: 'Stufe aktivieren',
+  confirmCancel: 'Abbrechen',
+  errWrongPassword: 'Falsches Passwort',
+  errNoKey: 'Kein verschlüsselter Schlüssel gefunden — bitte neu anmelden',
 } as const;
 
 export const encryption = {

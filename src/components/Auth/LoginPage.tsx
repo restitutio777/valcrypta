@@ -71,7 +71,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
         uploadKeyBackup(authData.user.id, encryptedPrivateKey);
       }
 
-      await persistUnlockedKey(authData.user.id, privateKey, securityLevel);
+      await persistUnlockedKey(authData.user.id, privateKeyString, securityLevel);
 
       setUser(authData.user);
       setKeys(userData.public_key, privateKey);

@@ -53,7 +53,7 @@ export default function UnlockPage() {
       if (userError) throw userError;
       if (!userData) throw new Error(unlock.errNoProfile);
 
-      await persistUnlockedKey(user.id, privateKey, securityLevel);
+      await persistUnlockedKey(user.id, privateKeyString, securityLevel);
 
       setKeys(userData.public_key, privateKey);
     } catch (err: unknown) {
