@@ -37,7 +37,7 @@ function App() {
       if (session?.user) {
         const { data: userData } = await supabase
           .from('users')
-          .select('*')
+          .select('id, username, public_key, created_at')
           .eq('id', session.user.id)
           .maybeSingle();
 

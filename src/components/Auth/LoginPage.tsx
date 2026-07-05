@@ -40,7 +40,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
 
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('*')
+        .select('id, username, public_key, created_at')
         .eq('id', authData.user.id)
         .maybeSingle();
 

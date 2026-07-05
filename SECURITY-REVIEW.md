@@ -156,8 +156,8 @@ Diese sind **ungeprüft**. Besonders `email_notification_queue` kann Metadaten (
 ### B-4 · HTTP-Security-Header live prüfen — ✅ erledigt (2026-07-05)
 Live geprüft an `https://valcrypta.vercel.app`. Ergebnis: **nur `Strict-Transport-Security` vorhanden** (2 Jahre, includeSubDomains, preload). **Fehlend: CSP, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`.** HTML-Antwort mit `access-control-allow-origin: *`. → Umsetzung siehe A-6.
 
-### B-5 · Dependency-/Supply-Chain-Audit
-`npm audit` / `npm outdated` ausführen; `@supabase/supabase-js`, `vite`, `zustand`, `lucide-react`, `react` auf bekannte CVEs prüfen. Lockfile-Integrität sicherstellen. Externe Font-CDNs (A-6) als Supply-Chain-Fläche bewerten.
+### B-5 · Dependency-/Supply-Chain-Audit — ✅ erledigt (2026-07-05)
+`npm audit`: 12 Findings (6 high, 5 moderate, 1 low). **Alle liegen in Build-/Dev-Dependencies** (`vite`, `esbuild`, `rollup`, `@babel/core`, `postcss`, `minimatch`, `picomatch`, `ws`, `flatted`, `ajv`, `js-yaml`, `brace-expansion`) — überwiegend nur den **lokalen Dev-Server** betreffend (z. B. `vite ≤6.4.2` Path-Traversal). Die **Runtime-Dependencies** (`@supabase/supabase-js`, `react`, `react-dom`, `zustand`, `lucide-react`) haben **keine** Advisories; nichts davon landet im ausgelieferten Browser-Bundle. **Priorität niedrig.** Empfehlung: gelegentlich `npm audit fix` / Vite auf eine gepatchte Version heben. Externe Font-CDNs (A-6) bleiben als Supply-Chain-Fläche relevant (idealerweise selbst hosten).
 
 ### B-6 · Storage-Bucket-Einstellungen — ✅ erledigt (unkritisch)
 Live geprüft: Bucket `encrypted_files` ist **privat** (`public=false`), `file_size_limit = 26214400` (25 MiB, serverseitig — deckt sich mit dem 25-MB-Client-Limit), `allowed_mime_types = null`. Die drei `storage.objects`-Policies sind **deckungsgleich mit `init.sql`** (Upload/Delete nur im eigenen `{uid}/`-Ordner, SELECT via `has_file_access`) — kein Drift. Keine öffentlichen Bucket-Listings. In Ordnung.
@@ -173,8 +173,8 @@ Offene Handlungspunkte (die live-verifizierten B-Punkte B-1/B-4/B-6 waren unkrit
 
 | Prio | Maßnahme | Bezug |
 |------|----------|-------|
-| 1 | E-Mail-PII aus der breiten `users`-SELECT-Policy entfernen (live bestätigt) | A-4 |
-| 1 | Strikte CSP + Security-Header (`vercel.json`/`_headers`) — live nur HSTS gesetzt | A-6, B-4 |
+| ✅ | **A-4 umgesetzt** (dieser PR): Frontend liest keine `email` mehr aus `users`; Migration `REVOKE SELECT (email)`. **⚠️ Migration erst NACH dem Frontend-Deploy anwenden.** | A-4 |
+| ✅ | **A-6 umgesetzt** (dieser PR): `vercel.json` mit strikter CSP + `X-Content-Type-Options`/`X-Frame-Options`/`Referrer-Policy`/`Permissions-Policy`/HSTS | A-6, B-4 |
 | 2 | Entsperrten Key non-extractable speichern statt Klartext-PKCS8 | A-3 |
 | 2 | Schlüssel-Fingerprint/Verify-Flow gegen Server-MITM | A-1 |
 | 2 | KDF härten (≥600k PBKDF2 / Argon2id) + Passwortlänge + **client-seitiger** HIBP-Check (Server-Schutz ist Pro-only) | A-5 |

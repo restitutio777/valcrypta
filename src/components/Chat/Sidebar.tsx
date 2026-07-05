@@ -45,7 +45,7 @@ export default function Sidebar() {
 
       const { data: usersData } = await supabase
         .from('users')
-        .select('*')
+        .select('id, username, public_key, created_at')
         .in('id', contactIds);
 
       if (usersData) {
@@ -65,7 +65,7 @@ export default function Sidebar() {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('*')
+        .select('id, username, public_key, created_at')
         .ilike('username', `%${query}%`)
         .neq('id', user?.id || '')
         .limit(5);
