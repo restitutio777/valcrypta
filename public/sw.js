@@ -2,7 +2,7 @@
 // App-Shell offline verfügbar. Nachrichten selbst laufen weiter live über
 // Supabase — hier wird ausschließlich statisches, unverschlüsseltes
 // Build-Material gecacht, nie API-Antworten oder Chiffretext.
-const CACHE = 'valcrypta-shell-v1';
+const CACHE = 'valcrypta-shell-v2';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(['/'])));
