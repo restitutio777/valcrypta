@@ -132,7 +132,6 @@ export default function Sidebar() {
         <div className="mb-4 flex items-center justify-between">
           <ValCryptaLogo size="md" showText={true} />
           <div className="flex items-center">
-            <LanguageSwitcher className="mr-1" />
             <button
               onClick={() => setShowEncryptionInfo(true)}
               className="btn-ghost-icon"
@@ -264,6 +263,10 @@ export default function Sidebar() {
             })}
           </div>
         )}
+      </div>
+
+      <div className="flex justify-center border-t border-sage-100 dark:border-ink-700/60 py-2">
+        <LanguageSwitcher />
       </div>
     </div>
   );
