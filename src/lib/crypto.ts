@@ -387,23 +387,65 @@ export function base64ToArrayBuffer(base64: string): ArrayBuffer {
   return bytes.buffer;
 }
 
+// Detects a run of 4+ adjacent characters from a common alphabetical or
+// keyboard sequence, in either direction (abcd, 4321, qwer). Long passwords
+// built from such runs have far less entropy than their length suggests.
+function hasSequentialRun(password: string): boolean {
+  const sequences = ['abcdefghijklmnopqrstuvwxyz', '0123456789', 'qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
+  const lower = password.toLowerCase();
+  for (const seq of sequences) {
+    for (let i = 0; i + 4 <= seq.length; i++) {
+      const chunk = seq.slice(i, i + 4);
+      const reversed = chunk.split('').reverse().join('');
+      if (lower.includes(chunk) || lower.includes(reversed)) return true;
+    }
+  }
+  return false;
+}
+
+// Rates a password 0–5. Length and character-class variety add points;
+// low-entropy patterns subtract them. The penalties matter because the
+// password is the ONLY thing protecting the private-key blob — including the
+// copy uploaded to the cloud backup, where a weak password is offline
+// brute-forceable regardless of the PBKDF2 work factor. Without the penalties
+// a long but trivial password like "aaaaaaaaaaaa" scored high enough to pass
+// the signup gate; now it does not.
 export function calculatePasswordStrength(password: string): {
   score: number;
   feedback: string;
 } {
+  if (!password) return { score: 0, feedback: 'Weak - Add more characters and variety' };
+
   let score = 0;
 
+  // Length milestones.
   if (password.length >= 8) score++;
   if (password.length >= 12) score++;
+  if (password.length >= 16) score++;
+
+  // Character-class variety.
   if (/[a-z]/.test(password)) score++;
   if (/[A-Z]/.test(password)) score++;
   if (/[0-9]/.test(password)) score++;
   if (/[^a-zA-Z0-9]/.test(password)) score++;
 
+  // Entropy penalties: too few distinct characters, long identical runs, or
+  // obvious sequences all cut the score so they can't pass the gate on length
+  // alone.
+  const uniqueChars = new Set(password).size;
+  if (uniqueChars <= 2) score -= 3;
+  else if (uniqueChars <= 4) score -= 2;
+  else if (uniqueChars <= 6) score -= 1;
+
+  if (/(.)\1{2,}/.test(password)) score -= 1; // 3+ identical characters in a row
+  if (hasSequentialRun(password)) score -= 1;
+
+  const clamped = Math.max(0, Math.min(score, 5));
+
   const feedback =
-    score < 3 ? 'Weak - Add more characters and variety' :
-    score < 5 ? 'Medium - Consider adding special characters' :
+    clamped < 3 ? 'Weak - Add more characters and variety' :
+    clamped < 5 ? 'Medium - Consider adding special characters' :
     'Strong - Good password';
 
-  return { score: Math.min(score, 5), feedback };
+  return { score: clamped, feedback };
 }
