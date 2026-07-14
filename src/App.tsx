@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import { useAuthStore } from './stores/auth-store';
+import { useUIStore } from './stores/ui-store';
+import { useCopy } from './lib/use-copy';
 import { restoreUnlockedKey } from './lib/key-session';
 import SecuritySettingsModal from './components/SecuritySettingsModal';
 import LandingPage from './components/LandingPage';
@@ -15,6 +17,8 @@ import InstallPrompt from './components/InstallPrompt';
 function App() {
   const [authView, setAuthView] = useState<'landing' | 'login' | 'signup'>('landing');
   const { user, privateKey, setUser, setKeys, setLoading, isLoading } = useAuthStore();
+  const language = useUIStore((s) => s.language);
+  const { common } = useCopy();
 
   useEffect(() => {
     checkAuth();
@@ -30,6 +34,12 @@ function App() {
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  // Keep the document's declared language in sync with the chosen locale
+  // (accessibility + correct browser spell-check/translate behavior).
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const checkAuth = async () => {
     try {
@@ -70,7 +80,7 @@ function App() {
             <div className="absolute inset-0 animate-spin rounded-full border-4 border-primary/20 border-t-primary" />
             <div className="absolute inset-3 rounded-full bg-brand-gradient opacity-20 animate-glow-pulse" />
           </div>
-          <p className="font-medium text-warm-500 dark:text-warm-300">Lädt …</p>
+          <p className="font-medium text-warm-500 dark:text-warm-300">{common.loading}</p>
         </div>
       </div>
     );
@@ -89,7 +99,6 @@ function App() {
         ) : (
           <SignupPage onSwitchToLogin={() => setAuthView('login')} />
         )}
-        <InstallPrompt />
       </>
     );
   }

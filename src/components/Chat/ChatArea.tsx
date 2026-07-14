@@ -8,11 +8,12 @@ import { checkAndPinContactKey, acceptContactKey, computeFingerprint } from '../
 import { sendFile, deleteMessage, MAX_FILE_SIZE, FileTooLargeError, FileMeta } from '../../lib/files';
 import { useUIStore } from '../../stores/ui-store';
 import FileMessage from './FileMessage';
-import { chat, keyVerify } from '../../lib/copy';
+import { useCopy } from '../../lib/use-copy';
 
 type MessageRow = Database['public']['Tables']['messages']['Row'];
 
 export default function ChatArea() {
+  const { chat, keyVerify } = useCopy();
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);

@@ -7,7 +7,7 @@ import { decryptPrivateKey, importPrivateKey } from '../../lib/crypto';
 import { fetchKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
-import { common, unlock } from '../../lib/copy';
+import { useCopy } from '../../lib/use-copy';
 
 export default function UnlockPage() {
   const [password, setPassword] = useState('');
@@ -17,6 +17,7 @@ export default function UnlockPage() {
 
   const { user, setKeys, clearAuth } = useAuthStore();
   const { securityLevel } = useUIStore();
+  const { common, unlock } = useCopy();
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -5,12 +5,13 @@ import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
 import { computeFingerprint } from '../../lib/key-pinning';
-import { chat, sidebar, keyVerify } from '../../lib/copy';
+import { useCopy } from '../../lib/use-copy';
 
 export default function TopBar() {
   const { activeContact, setActiveContact } = useChatStore();
   const { publicKey } = useAuthStore();
   const { setShowSecuritySettings } = useUIStore();
+  const { chat, sidebar, keyVerify } = useCopy();
   const [verifyFps, setVerifyFps] = useState<{ mine: string; theirs: string } | null>(null);
 
   const openVerify = async () => {

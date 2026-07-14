@@ -7,7 +7,7 @@ import { decryptPrivateKey, importPrivateKey } from '../../lib/crypto';
 import { fetchKeyBackup, uploadKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
-import { common, login } from '../../lib/copy';
+import { useCopy } from '../../lib/use-copy';
 
 interface LoginPageProps {
   onSwitchToSignup: () => void;
@@ -22,6 +22,7 @@ export default function LoginPage({ onSwitchToSignup }: LoginPageProps) {
 
   const { setUser, setKeys } = useAuthStore();
   const { securityLevel } = useUIStore();
+  const { common, login } = useCopy();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

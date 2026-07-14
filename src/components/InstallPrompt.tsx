@@ -1,47 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Download, X, Share } from 'lucide-react';
-import { pwa } from '../lib/copy';
-
-// Chrome/Android liefern dieses Event, bevor der Browser den eigenen
-// Installations-Hinweis zeigt. Wir fangen es ab und bieten stattdessen einen
-// dezenten eigenen Hinweis an.
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { useCopy } from '../lib/use-copy';
+import { getDeferredPrompt, onInstallAvailabilityChange, promptInstall, isStandalone, isIos } from '../lib/install';
 
 const DISMISS_KEY = 'valcrypta-install-dismissed';
 
-const isStandalone = () =>
-  window.matchMedia('(display-mode: standalone)').matches ||
-  // iOS Safari meldet den Home-Screen-Modus über navigator.standalone.
-  (navigator as unknown as { standalone?: boolean }).standalone === true;
+// Only rendered in the logged-in view (see App.tsx) so it never interrupts
+// the landing/login/signup flow — new users learn about installing from
+// the calm section on the landing page instead. A short delay after mount
+// keeps it from popping up the instant someone signs in.
+const SHOW_DELAY_MS = 25_000;
 
-const isIos = () =>
-  /iphone|ipad|ipod/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent);
-
-// Kleiner, dezenter Install-Hinweis. Erscheint einmalig unten und lässt sich
-// dauerhaft wegklicken. Auf iOS gibt es kein Prompt-Event, daher eine kurze
-// Anleitung zum „Zum Home-Bildschirm".
+// Small, unobtrusive install hint. Appears once at the bottom and can be
+// dismissed permanently. iOS has no prompt event, so it gets a short
+// "Share" -> "Add to Home Screen" instruction instead.
 export default function InstallPrompt() {
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const { pwa } = useCopy();
+  const [hasPrompt, setHasPrompt] = useState(getDeferredPrompt());
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     if (isStandalone() || localStorage.getItem(DISMISS_KEY)) return;
 
-    const onBeforeInstall = (e: Event) => {
-      e.preventDefault();
-      setDeferred(e as BeforeInstallPromptEvent);
-      setShow(true);
-    };
-    window.addEventListener('beforeinstallprompt', onBeforeInstall);
+    const unsubscribe = onInstallAvailabilityChange(setHasPrompt);
 
-    // iOS bietet kein Event — Hinweis nach kurzer Verzögerung selbst zeigen.
-    let iosTimer: ReturnType<typeof setTimeout> | undefined;
-    if (isIos()) {
-      iosTimer = setTimeout(() => setShow(true), 2500);
-    }
+    const showTimer = setTimeout(() => setShow(true), SHOW_DELAY_MS);
 
     const onInstalled = () => {
       setShow(false);
@@ -50,9 +33,9 @@ export default function InstallPrompt() {
     window.addEventListener('appinstalled', onInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', onBeforeInstall);
+      unsubscribe();
+      clearTimeout(showTimer);
       window.removeEventListener('appinstalled', onInstalled);
-      if (iosTimer) clearTimeout(iosTimer);
     };
   }, []);
 
@@ -62,16 +45,13 @@ export default function InstallPrompt() {
   };
 
   const install = async () => {
-    if (!deferred) return;
-    await deferred.prompt();
-    await deferred.userChoice;
-    setDeferred(null);
+    await promptInstall();
     dismiss();
   };
 
   if (!show) return null;
 
-  const iosMode = !deferred && isIos();
+  const iosMode = !hasPrompt && isIos();
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 flex justify-center px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
@@ -84,9 +64,11 @@ export default function InstallPrompt() {
           <p className="mt-0.5 flex items-center gap-1 text-[13px] leading-snug text-warm-500 dark:text-warm-300">
             {iosMode ? (
               <>
-                <span>Zum Installieren</span>
+                <span>{pwa.iosHintPre}</span>
                 <Share className="inline h-3.5 w-3.5 flex-shrink-0" />
-                <span>„Teilen" → „Zum Home-Bildschirm".</span>
+                <span>
+                  {pwa.iosHintShare} {pwa.iosHintAdd}
+                </span>
               </>
             ) : (
               pwa.body

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Download, FileText, X, AlertCircle } from 'lucide-react';
 import { downloadFileBytes } from '../../lib/files';
 import { useAuthStore } from '../../stores/auth-store';
-import { chat } from '../../lib/copy';
+import { useCopy } from '../../lib/use-copy';
 
 interface FileMessageProps {
   fileUrl: string;
@@ -46,6 +46,7 @@ export default function FileMessage({
   isOwn,
 }: FileMessageProps) {
   const { privateKey } = useAuthStore();
+  const { chat } = useCopy();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [showLightbox, setShowLightbox] = useState(false);

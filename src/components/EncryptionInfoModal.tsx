@@ -1,9 +1,10 @@
 import { X, Lock, Key, Shield } from 'lucide-react';
 import { useUIStore } from '../stores/ui-store';
-import { encryption } from '../lib/copy';
+import { useCopy } from '../lib/use-copy';
 
 export default function EncryptionInfoModal() {
   const { showEncryptionInfo, setShowEncryptionInfo } = useUIStore();
+  const { encryption } = useCopy();
 
   if (!showEncryptionInfo) return null;
 

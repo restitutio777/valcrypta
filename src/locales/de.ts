@@ -1,4 +1,4 @@
-// Alle sichtbaren Texte. Eine spätere EN-Fassung ersetzt ausschließlich diese Datei.
+// Deutsche Basis-Übersetzung. Alle sichtbaren Texte der App.
 //
 // Stimmregeln: konkrete Mechanismen statt Superlative, keine Ausrufezeichen,
 // kurze Aussagesätze. Jede technische Behauptung entspricht dem Code.
@@ -6,13 +6,17 @@
 // Kein institutionelles "wir": ValCrypta ist keine Firma, NGO oder Behörde,
 // sondern ein privates, nicht kommerzielles Projekt. Subjekt ist die App,
 // der Server, der Mechanismus oder du — nie ein Betreiber-"wir".
+//
+// Diese Regeln gelten für alle Sprachfassungen (siehe en.ts, fr.ts).
 
-export const brand = {
+const tagline = 'Von dir verschlüsselt. Auf dem Server unlesbar.';
+
+const brand = {
   name: 'ValCrypta',
-  tagline: 'Von dir verschlüsselt. Auf dem Server unlesbar.',
-} as const;
+  tagline,
+};
 
-export const landing = {
+const landing = {
   kicker: 'Ende-zu-Ende-verschlüsselter Messenger',
   heroLine1: 'Nachrichten,',
   heroLine2Pre: 'die niemand ',
@@ -54,6 +58,7 @@ export const landing = {
     sub: 'Sicherheit und Komfort sind ein Abwägen. Du entscheidest — und kannst die Stufe jederzeit in den Einstellungen ändern.',
   },
   how: {
+    kicker: 'Protokoll',
     title: 'Wie ValCrypta funktioniert',
     steps: [
       {
@@ -87,6 +92,16 @@ export const landing = {
       items: ['Klartext deiner Nachrichten', 'Private Schlüssel', 'Metadaten-Profile', 'Werbedaten'],
     },
   },
+  install: {
+    kicker: 'Als App',
+    title: 'Auf dem Startbildschirm, wie eine App',
+    body:
+      'ValCrypta ist eine Web-App und installiert sich direkt aus dem Browser — kein App Store, nichts herunterzuladen. Updates kommen automatisch. Installiert öffnet sie sich in einem eigenen Fenster, wie eine native App.',
+    button: 'Installieren',
+    genericHint:
+      'Die Installation wird im Browsermenü angeboten — bei Chrome zum Beispiel über „Installieren" in der Adressleiste.',
+    alreadyInstalled: 'Bereits installiert.',
+  },
   finalCta: {
     pre: 'Ein Gespräch, das ',
     emphasis: 'privat',
@@ -99,19 +114,20 @@ export const landing = {
     linkText: 'Quellcode ansehen',
     url: 'https://github.com/restitutio777/valcrypta',
   },
-} as const;
+};
 
-export const common = {
+const common = {
   email: 'E-Mail',
   emailPlaceholder: 'du@beispiel.de',
   password: 'Passwort',
   passwordPlaceholder: '••••••••',
   loading: 'Lädt …',
-} as const;
+  languageTooltip: 'Sprache wechseln',
+};
 
-export const login = {
+const login = {
   title: 'Willkommen zurück',
-  subtitle: brand.tagline,
+  subtitle: tagline,
   submit: 'Anmelden',
   submitting: 'Anmeldung läuft …',
   noAccount: 'Noch kein Konto?',
@@ -122,11 +138,11 @@ export const login = {
   errNoKey:
     'Auf diesem Gerät liegt kein Schlüssel für dieses Konto, und es existiert kein Cloud-Backup. Melde dich auf deinem ursprünglichen Gerät an und aktiviere dort ein Backup in den Sicherheitseinstellungen.',
   errGeneric: 'Bei der Anmeldung ist ein Fehler aufgetreten',
-} as const;
+};
 
-export const signup = {
+const signup = {
   title: 'Konto erstellen',
-  subtitle: brand.tagline,
+  subtitle: tagline,
   warningTitle: 'Wichtig:',
   warningBody:
     ' Dein Passwort verschlüsselt deine Nachrichten. Geht es verloren, sind deine Nachrichten nicht wiederherstellbar. Bewahre es sicher auf.',
@@ -147,9 +163,9 @@ export const signup = {
   errGeneric: 'Bei der Registrierung ist ein Fehler aufgetreten',
   // Ersetzt das englische Feedback aus crypto.ts: Index = min(score, 5)
   strength: ['Sehr schwach', 'Sehr schwach', 'Schwach', 'Okay', 'Gut', 'Stark'],
-} as const;
+};
 
-export const unlock = {
+const unlock = {
   title: 'Entsperren',
   subtitle: 'Dein Passwort entschlüsselt deinen privaten Schlüssel',
   submit: 'Entsperren',
@@ -159,9 +175,9 @@ export const unlock = {
   errNoProfile: 'Kein Nutzerprofil gefunden',
   errGeneric: 'Entsperren fehlgeschlagen',
   signOut: 'Abmelden und anderes Konto verwenden',
-} as const;
+};
 
-export const security = {
+const security = {
   title: 'Sicherheitsstufe',
   subtitle: 'Wähle dein Verhältnis von Schutz und Komfort',
   active: 'Aktiv',
@@ -203,9 +219,9 @@ export const security = {
   confirmCancel: 'Abbrechen',
   errWrongPassword: 'Falsches Passwort',
   errNoKey: 'Kein verschlüsselter Schlüssel gefunden — bitte neu anmelden',
-} as const;
+};
 
-export const encryption = {
+const encryption = {
   title: 'So funktioniert die Verschlüsselung',
   s1Title: 'Deine Nachrichten sind privat',
   s1Body:
@@ -226,9 +242,9 @@ export const encryption = {
   techTitle: 'Technische Details',
   techBody:
     'Jede Nachricht erhält einen frischen AES-256-GCM-Schlüssel, der per RSA-OAEP-2048 für Empfänger und Absender verpackt wird. Dein privater Schlüssel ist mit AES-256-GCM geschützt; der Schutzschlüssel wird per PBKDF2 mit 100.000 Iterationen aus deinem Passwort abgeleitet.',
-} as const;
+};
 
-export const chat = {
+const chat = {
   emptyTitle: 'Wähle einen Kontakt',
   emptySub: 'Suche links nach Nutzernamen',
   emptyBadge: 'Alle Nachrichten sind Ende-zu-Ende verschlüsselt',
@@ -256,9 +272,9 @@ export const chat = {
   errSendFile: 'Datei konnte nicht gesendet werden',
   errDelete: 'Nachricht konnte nicht gelöscht werden',
   errFileTooLarge: 'Datei ist zu groß (max. 25 MB)',
-} as const;
+};
 
-export const keyVerify = {
+const keyVerify = {
   changedTitle: 'Achtung: Schlüssel hat sich geändert',
   changedBody: (name: string) =>
     `Der Verschlüsselungscode von „${name}" ist nicht mehr derselbe wie beim letzten Mal. Das kann harmlos sein (neues Konto, neues Gerät) — oder jemand versucht, sich dazwischenzuschalten. Zur Sicherheit ist das Senden blockiert, bis du den neuen Schlüssel bestätigst.`,
@@ -274,17 +290,19 @@ export const keyVerify = {
   verifyTheirs: (name: string) => `Kennung von „${name}"`,
   verifyClose: 'Verstanden',
   errCheck: 'Schlüssel-Prüfung fehlgeschlagen',
-} as const;
+};
 
-export const pwa = {
+const pwa = {
   title: 'ValCrypta installieren',
   body: 'Füge ValCrypta zum Startbildschirm hinzu — es öffnet wie eine App, im eigenen Fenster.',
-  bodyIos: 'Zum Installieren: unten auf „Teilen" tippen, dann „Zum Home-Bildschirm".',
+  iosHintPre: 'Zum Installieren',
+  iosHintShare: '„Teilen"',
+  iosHintAdd: '→ „Zum Home-Bildschirm".',
   install: 'Installieren',
   dismiss: 'Nicht jetzt',
-} as const;
+};
 
-export const sidebar = {
+const sidebar = {
   searchPlaceholder: 'Personen per Nutzername finden …',
   noUsers: 'Keine Nutzer gefunden',
   alreadyContact: 'Bereits verbunden — tippen zum Öffnen',
@@ -297,4 +315,23 @@ export const sidebar = {
   securityTooltip: 'Sicherheitsstufe',
   darkModeTooltip: 'Dunkelmodus umschalten',
   logoutTooltip: 'Abmelden',
-} as const;
+};
+
+const de = {
+  brand,
+  landing,
+  common,
+  login,
+  signup,
+  unlock,
+  security,
+  encryption,
+  chat,
+  keyVerify,
+  pwa,
+  sidebar,
+};
+
+export type Copy = typeof de;
+
+export default de;
