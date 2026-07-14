@@ -103,8 +103,8 @@ const en: Copy = {
     footerLegal: '© 2026 ValCrypta',
     openSource: {
       label: 'Open source · AGPL-3.0',
-      linkText: 'View source code',
-      url: 'https://github.com/restitutio777/valcrypta',
+      linkText: 'Source code on request',
+      url: 'mailto:pgj@mailbox.org?subject=ValCrypta%20-%20Source%20code',
     },
   },
 

@@ -111,8 +111,8 @@ const landing = {
   footerLegal: '© 2026 ValCrypta',
   openSource: {
     label: 'Quelloffen · AGPL-3.0',
-    linkText: 'Quellcode ansehen',
-    url: 'https://github.com/restitutio777/valcrypta',
+    linkText: 'Quellcode auf Anfrage',
+    url: 'mailto:pgj@mailbox.org?subject=ValCrypta%20-%20Quellcode',
   },
 };
 
