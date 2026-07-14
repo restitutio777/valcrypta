@@ -15,6 +15,7 @@ import { uploadKeyBackup, persistUnlockedKey } from '../../lib/key-session';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
 import { useCopy } from '../../lib/use-copy';
+import LanguageSwitcher from '../LanguageSwitcher';
 
 interface SignupPageProps {
   onSwitchToLogin: () => void;
@@ -128,6 +129,9 @@ export default function SignupPage({ onSwitchToLogin }: SignupPageProps) {
   return (
     <div className="aurora-bg grain min-h-screen bg-porcelain-100 dark:bg-ink-950 flex items-center justify-center p-4">
       <div className="glass-card relative z-10 w-full max-w-md rounded-3xl p-8 shadow-lift animate-scale-in">
+        <div className="mb-4 flex justify-center">
+          <LanguageSwitcher />
+        </div>
         <div className="mb-6 text-center">
           <div className="mb-5 flex justify-center">
             <ValCryptaLogo size="lg" showText={false} />
