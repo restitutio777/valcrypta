@@ -104,15 +104,9 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           <nav className="container mx-auto px-6 py-5">
             <div className="flex items-center justify-between">
               <ValCryptaLogo size="sm" shape="circle" showText={true} />
-              <div className="flex items-center gap-2 sm:gap-4">
-                <LanguageSwitcher />
-                <button
-                  onClick={onSignIn}
-                  className="btn-glass px-4 py-2 text-sm sm:px-5"
-                >
-                  {landing.ctaSecondary}
-                </button>
-              </div>
+              <button onClick={onSignIn} className="btn-glass px-5 py-2 text-sm">
+                {landing.ctaSecondary}
+              </button>
             </div>
           </nav>
 
@@ -429,6 +423,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           >
             {landing.openSource.label} · {landing.openSource.linkText}
           </a>
+          <LanguageSwitcher />
         </div>
       </footer>
     </div>
