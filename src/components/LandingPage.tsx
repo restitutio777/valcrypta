@@ -1,5 +1,15 @@
+import { useEffect, useState } from 'react';
+import { Download, Share } from 'lucide-react';
 import ValCryptaLogo from './ValCryptaLogo';
-import { landing, security, brand } from '../lib/copy';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useCopy } from '../lib/use-copy';
+import {
+  getDeferredPrompt,
+  onInstallAvailabilityChange,
+  promptInstall,
+  isStandalone,
+  isIos,
+} from '../lib/install';
 
 const LEVEL_ORDER = ['maximum', 'balanced', 'comfort'] as const;
 
@@ -51,6 +61,21 @@ function MistHills() {
 }
 
 export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps) {
+  const { landing, security, brand, pwa } = useCopy();
+  const [hasPrompt, setHasPrompt] = useState(getDeferredPrompt());
+  const [standalone, setStandalone] = useState(false);
+  const [iosDevice, setIosDevice] = useState(false);
+
+  useEffect(() => {
+    setStandalone(isStandalone());
+    setIosDevice(isIos());
+    return onInstallAvailabilityChange(setHasPrompt);
+  }, []);
+
+  const handleInstall = () => {
+    void promptInstall();
+  };
+
   return (
     <div className="min-h-screen bg-porcelain-50 dark:bg-ink-950">
       {/* ---------------------------------------------------------------- */}
@@ -79,12 +104,15 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           <nav className="container mx-auto px-6 py-5">
             <div className="flex items-center justify-between">
               <ValCryptaLogo size="sm" shape="circle" showText={true} />
-              <button
-                onClick={onSignIn}
-                className="btn-glass px-5 py-2 text-sm"
-              >
-                {landing.ctaSecondary}
-              </button>
+              <div className="flex items-center gap-4">
+                <LanguageSwitcher className="hidden sm:inline-flex" />
+                <button
+                  onClick={onSignIn}
+                  className="btn-glass px-5 py-2 text-sm"
+                >
+                  {landing.ctaSecondary}
+                </button>
+              </div>
             </div>
           </nav>
 
@@ -188,7 +216,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       {/* Wie ValCrypta funktioniert — typographic, numbered, no icons       */}
       {/* ---------------------------------------------------------------- */}
       <section className="container mx-auto max-w-3xl px-6 py-20 md:py-28">
-        <span className="spec-label">Protokoll</span>
+        <span className="spec-label">{landing.how.kicker}</span>
         <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
           {landing.how.title}
         </h2>
@@ -337,6 +365,46 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           >
             {landing.finalCta.button}
           </button>
+        </div>
+      </section>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Als App — ruhiger Installationshinweis, kein Popup                 */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container mx-auto max-w-3xl px-6 pb-24 md:pb-28">
+        <span className="spec-label">{landing.install.kicker}</span>
+        <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+          {landing.install.title}
+        </h2>
+        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-porcelain-600 dark:text-porcelain-300">
+          {landing.install.body}
+        </p>
+
+        <div className="mt-7">
+          {standalone ? (
+            <p className="text-sm text-porcelain-500 dark:text-porcelain-400">
+              {landing.install.alreadyInstalled}
+            </p>
+          ) : hasPrompt ? (
+            <button onClick={handleInstall} className="btn-primary px-6 py-3 text-sm">
+              <span className="inline-flex items-center gap-2">
+                <Download className="h-4 w-4" />
+                {landing.install.button}
+              </span>
+            </button>
+          ) : iosDevice ? (
+            <p className="inline-flex flex-wrap items-center gap-1.5 text-sm text-porcelain-600 dark:text-porcelain-300">
+              <span>{pwa.iosHintPre}</span>
+              <Share className="inline h-3.5 w-3.5 flex-shrink-0" />
+              <span>
+                {pwa.iosHintShare} {pwa.iosHintAdd}
+              </span>
+            </p>
+          ) : (
+            <p className="text-sm text-porcelain-500 dark:text-porcelain-400">
+              {landing.install.genericHint}
+            </p>
+          )}
         </div>
       </section>
 

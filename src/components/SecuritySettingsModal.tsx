@@ -12,52 +12,53 @@ import {
   deleteKeyBackup,
   fetchKeyBackup,
 } from '../lib/key-session';
-import { security } from '../lib/copy';
-
-const LEVELS: {
-  id: SecurityLevel;
-  name: string;
-  tagline: string;
-  icon: typeof ShieldCheck;
-  points: { icon: typeof Cloud; text: string }[];
-}[] = [
-  {
-    id: 'maximum',
-    name: security.levels.maximum.name,
-    tagline: security.levels.maximum.tagline,
-    icon: ShieldAlert,
-    points: [
-      { icon: RefreshCw, text: security.levels.maximum.points[0] },
-      { icon: CloudOff, text: security.levels.maximum.points[1] },
-    ],
-  },
-  {
-    id: 'balanced',
-    name: security.levels.balanced.name,
-    tagline: security.levels.balanced.tagline,
-    icon: ShieldCheck,
-    points: [
-      { icon: RefreshCw, text: security.levels.balanced.points[0] },
-      { icon: Cloud, text: security.levels.balanced.points[1] },
-    ],
-  },
-  {
-    id: 'comfort',
-    name: security.levels.comfort.name,
-    tagline: security.levels.comfort.tagline,
-    icon: Smartphone,
-    points: [
-      { icon: Smartphone, text: security.levels.comfort.points[0] },
-      { icon: Cloud, text: security.levels.comfort.points[1] },
-    ],
-  },
-];
+import { useCopy } from '../lib/use-copy';
 
 export default function SecuritySettingsModal() {
   const { showSecuritySettings, setShowSecuritySettings, securityLevel, setSecurityLevel, setNotification } =
     useUIStore();
   const { user } = useAuthStore();
+  const { security } = useCopy();
   const [isApplying, setIsApplying] = useState<SecurityLevel | null>(null);
+
+  const LEVELS: {
+    id: SecurityLevel;
+    name: string;
+    tagline: string;
+    icon: typeof ShieldCheck;
+    points: { icon: typeof Cloud; text: string }[];
+  }[] = [
+    {
+      id: 'maximum',
+      name: security.levels.maximum.name,
+      tagline: security.levels.maximum.tagline,
+      icon: ShieldAlert,
+      points: [
+        { icon: RefreshCw, text: security.levels.maximum.points[0] },
+        { icon: CloudOff, text: security.levels.maximum.points[1] },
+      ],
+    },
+    {
+      id: 'balanced',
+      name: security.levels.balanced.name,
+      tagline: security.levels.balanced.tagline,
+      icon: ShieldCheck,
+      points: [
+        { icon: RefreshCw, text: security.levels.balanced.points[0] },
+        { icon: Cloud, text: security.levels.balanced.points[1] },
+      ],
+    },
+    {
+      id: 'comfort',
+      name: security.levels.comfort.name,
+      tagline: security.levels.comfort.tagline,
+      icon: Smartphone,
+      points: [
+        { icon: Smartphone, text: security.levels.comfort.points[0] },
+        { icon: Cloud, text: security.levels.comfort.points[1] },
+      ],
+    },
+  ];
   // Switching to balanced/comfort re-derives the key from the encrypted
   // blob, so the password must be confirmed first; the target level waits
   // here until then.

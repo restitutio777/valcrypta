@@ -6,7 +6,8 @@ import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
 import { clearUnlockedKey } from '../../lib/key-session';
 import ValCryptaLogo from '../ValCryptaLogo';
-import { sidebar, chat } from '../../lib/copy';
+import LanguageSwitcher from '../LanguageSwitcher';
+import { useCopy } from '../../lib/use-copy';
 
 type UserRow = Database['public']['Tables']['users']['Row'];
 
@@ -14,6 +15,7 @@ export default function Sidebar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserRow[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const { sidebar, chat } = useCopy();
 
   const { contacts, activeContact, setContacts, setActiveContact, addContact, clearChat } =
     useChatStore();
@@ -130,6 +132,7 @@ export default function Sidebar() {
         <div className="mb-4 flex items-center justify-between">
           <ValCryptaLogo size="md" showText={true} />
           <div className="flex items-center">
+            <LanguageSwitcher className="mr-1" />
             <button
               onClick={() => setShowEncryptionInfo(true)}
               className="btn-ghost-icon"
