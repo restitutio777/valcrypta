@@ -22,13 +22,27 @@ export const landing = {
     'Der Server speichert nur Chiffretext.',
   ctaPrimary: 'Konto erstellen',
   ctaSecondary: 'Anmelden',
+  // Zeitlicher Aufhänger: Chatkontrolle, ruhig und mechanismus-basiert
+  // eingeordnet — bewusst ohne konkretes Beschluss-Datum, damit die
+  // Aussage nicht falsch altert. Ton: aufgeklärt, kein Alarmismus.
+  context: {
+    kicker: 'Einordnung',
+    title: 'Chatkontrolle ist da. Ein Grund umzudenken, keiner zur Panik.',
+    body: [
+      'Unter dem Stichwort Chatkontrolle will die EU private Nachrichten automatisiert durchsuchen lassen. Die abgeschwächte Stufe erlaubt großen Diensten, unverschlüsselte Inhalte freiwillig zu scannen. Ende-zu-Ende-verschlüsselte Nachrichten gehören nicht zu dieser Scan-Fläche.',
+      'Die schärfere Variante würde direkt auf dem Gerät scannen — bevor überhaupt verschlüsselt wird. Sie ist nicht beschlossen und bleibt umstritten. Bis dahin gilt: Was dein Gerät verschlüsselt, bevor es es verlässt, bleibt zwischen dir und deinem Gegenüber.',
+    ],
+    note:
+      'Das ist kein Wundermittel und kein Ersatz für die großen Dienste. Es ist ein Rückzugsraum für die Gespräche, die wirklich nur zwei Menschen etwas angehen.',
+  },
   // Zweck des Projekts: kein Produkt, keine Firma. Warum es das gibt.
   purpose: {
     kicker: 'Warum es das gibt',
-    title: 'Ein privates Projekt, kein Produkt',
+    title: 'Ein Werkzeug, kein Produkt',
     body: [
-      'ValCrypta ist keine Firma, keine Organisation und keine Behörde. Es ist ein privates, nicht kommerzielles Projekt mit einem Ziel: Redefreiheit schützen.',
+      'ValCrypta ist keine Firma, keine Organisation und keine Behörde — und auch kein Klub, dem man beitritt. Es ist ein privates, nicht kommerzielles Werkzeug mit einem Ziel: Redefreiheit schützen. Für jeden, der sie schützen will.',
       'Ein Gespräch soll privat bleiben können, weil niemand mitliest — kein Server, kein Dritter und auch nicht die Person, die ValCrypta betreibt. Nichts wird verkauft, es gibt keine Werbung und kein Tracking.',
+      'Der gesamte Quellcode ist offen und steht unter der AGPL-3.0. Prüfbar statt Vertrauen auf Zuruf: Jede technische Behauptung auf dieser Seite lässt sich im Code nachlesen.',
     ],
     responsibility:
       'ValCrypta stellt nur das Werkzeug bereit. Was du damit schreibst und mit wem, verantwortest du selbst.',
@@ -80,6 +94,11 @@ export const landing = {
     button: 'Konto erstellen',
   },
   footerLegal: '© 2026 ValCrypta',
+  openSource: {
+    label: 'Quelloffen · AGPL-3.0',
+    linkText: 'Quellcode ansehen',
+    url: 'https://github.com/restitutio777/valcrypta',
+  },
 } as const;
 
 export const common = {

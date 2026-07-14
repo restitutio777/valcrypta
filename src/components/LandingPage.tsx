@@ -78,7 +78,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
         <div className="relative z-10">
           <nav className="container mx-auto px-6 py-5">
             <div className="flex items-center justify-between">
-              <ValCryptaLogo size="md" showText={true} />
+              <ValCryptaLogo size="sm" shape="circle" showText={true} />
               <button
                 onClick={onSignIn}
                 className="btn-glass px-5 py-2 text-sm"
@@ -143,6 +143,26 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           </div>
         </div>
       </header>
+
+      {/* ---------------------------------------------------------------- */}
+      {/* Einordnung — Chatkontrolle, ruhig und aufgeklärt                    */}
+      {/* ---------------------------------------------------------------- */}
+      <section className="container mx-auto max-w-3xl px-6 pt-20 md:pt-28">
+        <span className="spec-label">{landing.context.kicker}</span>
+        <h2 className="mt-3 max-w-2xl font-display text-3xl font-semibold leading-[1.1] tracking-[-0.02em] text-porcelain-900 dark:text-porcelain-100 md:text-4xl">
+          {landing.context.title}
+        </h2>
+        <div className="mt-6 space-y-5">
+          {landing.context.body.map((para) => (
+            <p key={para} className="max-w-2xl text-lg leading-relaxed text-porcelain-600 dark:text-porcelain-300">
+              {para}
+            </p>
+          ))}
+        </div>
+        <p className="mt-8 max-w-2xl border-l-2 border-brass-400/70 pl-5 leading-relaxed text-porcelain-700 dark:text-porcelain-200">
+          {landing.context.note}
+        </p>
+      </section>
 
       {/* ---------------------------------------------------------------- */}
       {/* Warum es das gibt — Zweck: privates, nicht kommerzielles Projekt   */}
@@ -335,6 +355,14 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           <p className="text-sm text-porcelain-500 dark:text-porcelain-400">
             {landing.footerLegal} · {brand.tagline}
           </p>
+          <a
+            href={landing.openSource.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-porcelain-500 underline decoration-brass-400/50 underline-offset-4 transition-colors hover:text-brass-500 dark:text-porcelain-400 dark:hover:text-brass-300"
+          >
+            {landing.openSource.label} · {landing.openSource.linkText}
+          </a>
         </div>
       </footer>
     </div>
