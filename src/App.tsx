@@ -4,7 +4,9 @@ import { useAuthStore } from './stores/auth-store';
 import { useUIStore } from './stores/ui-store';
 import { useCopy } from './lib/use-copy';
 import { restoreUnlockedKey } from './lib/key-session';
+import { logVisit } from './lib/visits';
 import SecuritySettingsModal from './components/SecuritySettingsModal';
+import AdminStatsModal from './components/AdminStatsModal';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/Auth/LoginPage';
 import SignupPage from './components/Auth/SignupPage';
@@ -44,6 +46,10 @@ function App() {
   const checkAuth = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
+
+      // Anonymous visit counter for the admin statistics (once per browser
+      // session; only a timestamp and a signed-in flag ever leave the device).
+      logVisit(!!session?.user);
 
       if (session?.user) {
         const { data: userData } = await supabase
@@ -114,6 +120,7 @@ function App() {
       <ChatLayout />
       <EncryptionInfoModal />
       <SecuritySettingsModal />
+      <AdminStatsModal />
       <Notification />
       <InstallPrompt />
     </>

@@ -307,6 +307,25 @@ const en: Copy = {
     darkModeTooltip: 'Toggle dark mode',
     logoutTooltip: 'Sign out',
   },
+
+  admin: {
+    tooltip: 'Visitor statistics',
+    title: 'Visitor statistics',
+    subtitle: 'General numbers only — no contents, no profiles',
+    loading: 'Loading statistics …',
+    errLoad: 'Statistics could not be loaded',
+    visitsToday: 'Visits today',
+    visits7d: 'Visits · 7 days',
+    visits30d: 'Visits · 30 days',
+    visitsTotal: 'Visits total',
+    totalUsers: 'Registered accounts',
+    newUsers7d: 'New accounts · 7 days',
+    totalMessages: 'Messages total',
+    messages7d: 'Messages · 7 days',
+    chartTitle: 'Visits over the last 14 days',
+    privacyNote:
+      'Only the time of a visit is recorded — no IP address, no device, no link to an account. Messages are counted, never read: the server only ever holds ciphertext.',
+  },
 };
 
 export default en;

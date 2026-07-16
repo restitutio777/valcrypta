@@ -253,6 +253,80 @@ CREATE POLICY "Users can delete own files"
     AND (storage.foldername(name))[1] = auth.uid()::text
   );
 
+-- Visitor statistics (admin backend)
+-- One row per app visit: timestamp + signed-in flag, nothing identifying
+-- (no IP, no user agent, no user id). Write-only for clients; the admin reads
+-- aggregates via get_admin_stats(), authorized server-side by JWT email.
+-- See supabase/migrations/20260716090000_add_visitor_stats_admin.sql.
+
+CREATE TABLE IF NOT EXISTS site_visits (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  is_authenticated boolean NOT NULL DEFAULT false
+);
+
+ALTER TABLE site_visits ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can log a visit" ON site_visits;
+CREATE POLICY "Anyone can log a visit"
+  ON site_visits
+  FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (true);
+
+CREATE INDEX IF NOT EXISTS site_visits_created_at_idx ON site_visits(created_at DESC);
+
+-- Clients may only ever supply the signed-in flag; id and created_at always
+-- come from the column defaults (no backdating, no chosen ids).
+REVOKE ALL ON public.site_visits FROM anon, authenticated;
+GRANT INSERT (is_authenticated) ON public.site_visits TO anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.get_admin_stats()
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'pg_catalog'
+AS $$
+DECLARE
+  today timestamptz := date_trunc('day', now());
+BEGIN
+  IF coalesce(auth.jwt() ->> 'email', '') <> 'pgj@mailbox.org' THEN
+    RAISE EXCEPTION 'not authorized';
+  END IF;
+
+  RETURN jsonb_build_object(
+    'total_users', (SELECT count(*) FROM public.users),
+    'new_users_7d', (SELECT count(*) FROM public.users WHERE created_at >= now() - interval '7 days'),
+    'new_users_30d', (SELECT count(*) FROM public.users WHERE created_at >= now() - interval '30 days'),
+    'total_messages', (SELECT count(*) FROM public.messages),
+    'messages_7d', (SELECT count(*) FROM public.messages WHERE created_at >= now() - interval '7 days'),
+    'visits_today', (SELECT count(*) FROM public.site_visits WHERE created_at >= today),
+    'visits_7d', (SELECT count(*) FROM public.site_visits WHERE created_at >= now() - interval '7 days'),
+    'visits_30d', (SELECT count(*) FROM public.site_visits WHERE created_at >= now() - interval '30 days'),
+    'visits_total', (SELECT count(*) FROM public.site_visits),
+    'visits_daily', (
+      SELECT coalesce(
+        jsonb_agg(
+          jsonb_build_object('day', to_char(d.day, 'YYYY-MM-DD'), 'count', coalesce(v.n, 0))
+          ORDER BY d.day
+        ),
+        '[]'::jsonb
+      )
+      FROM generate_series(today - interval '13 days', today, interval '1 day') AS d(day)
+      LEFT JOIN (
+        SELECT date_trunc('day', created_at) AS day, count(*) AS n
+        FROM public.site_visits
+        WHERE created_at >= today - interval '13 days'
+        GROUP BY 1
+      ) v ON v.day = d.day
+    )
+  );
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.get_admin_stats() FROM anon, public;
+GRANT EXECUTE ON FUNCTION public.get_admin_stats() TO authenticated;
+
 -- NOTE: production also contains additional, separately-prepared feature tables
 -- (typing_status, unread_counts, notification_settings, email_notification_queue)
 -- and their triggers/functions, which are outside the file-sharing scope of this
