@@ -106,6 +106,23 @@ export type Database = {
           created_at?: string;
         };
       };
+      site_visits: {
+        Row: {
+          id: string;
+          created_at: string;
+          is_authenticated: boolean;
+        };
+        Insert: {
+          id?: string;
+          created_at?: string;
+          is_authenticated?: boolean;
+        };
+        Update: {
+          id?: string;
+          created_at?: string;
+          is_authenticated?: boolean;
+        };
+      };
       key_backups: {
         Row: {
           user_id: string;

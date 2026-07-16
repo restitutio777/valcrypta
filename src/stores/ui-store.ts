@@ -21,6 +21,7 @@ interface UIState {
   sidebarOpen: boolean;
   showEncryptionInfo: boolean;
   showSecuritySettings: boolean;
+  showAdminStats: boolean;
   securityLevel: SecurityLevel;
   language: Language;
   notification: {
@@ -31,6 +32,7 @@ interface UIState {
   toggleSidebar: () => void;
   setShowEncryptionInfo: (show: boolean) => void;
   setShowSecuritySettings: (show: boolean) => void;
+  setShowAdminStats: (show: boolean) => void;
   setSecurityLevel: (level: SecurityLevel) => void;
   setLanguage: (language: Language) => void;
   setNotification: (notification: UIState['notification']) => void;
@@ -44,6 +46,7 @@ export const useUIStore = create<UIState>()(
       sidebarOpen: window.innerWidth >= 1024,
       showEncryptionInfo: false,
       showSecuritySettings: false,
+      showAdminStats: false,
       securityLevel: 'balanced',
       language: detectLanguage(),
       notification: null,
@@ -51,6 +54,7 @@ export const useUIStore = create<UIState>()(
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setShowEncryptionInfo: (show) => set({ showEncryptionInfo: show }),
       setShowSecuritySettings: (show) => set({ showSecuritySettings: show }),
+      setShowAdminStats: (show) => set({ showAdminStats: show }),
       setSecurityLevel: (level) => set({ securityLevel: level }),
       setLanguage: (language) => set({ language }),
       setNotification: (notification) => set({ notification }),

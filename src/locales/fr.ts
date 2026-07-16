@@ -308,6 +308,25 @@ const fr: Copy = {
     darkModeTooltip: 'Basculer le mode sombre',
     logoutTooltip: 'Se déconnecter',
   },
+
+  admin: {
+    tooltip: 'Statistiques des visiteurs',
+    title: 'Statistiques des visiteurs',
+    subtitle: 'Uniquement des chiffres généraux — ni contenus, ni profils',
+    loading: 'Chargement des statistiques …',
+    errLoad: "Les statistiques n'ont pas pu être chargées",
+    visitsToday: "Visites aujourd'hui",
+    visits7d: 'Visites · 7 jours',
+    visits30d: 'Visites · 30 jours',
+    visitsTotal: 'Visites au total',
+    totalUsers: 'Comptes enregistrés',
+    newUsers7d: 'Nouveaux comptes · 7 jours',
+    totalMessages: 'Messages au total',
+    messages7d: 'Messages · 7 jours',
+    chartTitle: 'Visites des 14 derniers jours',
+    privacyNote:
+      "Seul le moment d'une visite est enregistré — ni adresse IP, ni appareil, ni lien avec un compte. Les messages sont comptés, jamais lus : le serveur ne détient que du texte chiffré.",
+  },
 };
 
 export default fr;
