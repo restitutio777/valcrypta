@@ -317,6 +317,27 @@ const sidebar = {
   logoutTooltip: 'Abmelden',
 };
 
+// Admin-Backend: ausschließlich aggregierte Zahlen. Die Freigabe prüft der
+// Server (get_admin_stats), der Button erscheint nur für das Admin-Konto.
+const admin = {
+  tooltip: 'Besucher-Statistik',
+  title: 'Besucher-Statistik',
+  subtitle: 'Nur allgemeine Zahlen — keine Inhalte, keine Profile',
+  loading: 'Statistik wird geladen …',
+  errLoad: 'Statistik konnte nicht geladen werden',
+  visitsToday: 'Besuche heute',
+  visits7d: 'Besuche · 7 Tage',
+  visits30d: 'Besuche · 30 Tage',
+  visitsTotal: 'Besuche gesamt',
+  totalUsers: 'Registrierte Konten',
+  newUsers7d: 'Neue Konten · 7 Tage',
+  totalMessages: 'Nachrichten gesamt',
+  messages7d: 'Nachrichten · 7 Tage',
+  chartTitle: 'Besuche der letzten 14 Tage',
+  privacyNote:
+    'Erfasst wird nur der Zeitpunkt eines Besuchs — keine IP-Adresse, kein Gerät, kein Bezug zu einem Konto. Nachrichten werden gezählt, nie gelesen: Der Server kennt nur Chiffretext.',
+};
+
 const de = {
   brand,
   landing,
@@ -330,6 +351,7 @@ const de = {
   keyVerify,
   pwa,
   sidebar,
+  admin,
 };
 
 export type Copy = typeof de;

@@ -1,17 +1,18 @@
 import { useState } from 'react';
-import { ArrowLeft, Settings2, X, Fingerprint } from 'lucide-react';
+import { ArrowLeft, X, Fingerprint, BarChart3 } from 'lucide-react';
 import ValCryptaLogo from '../ValCryptaLogo';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
 import { computeFingerprint } from '../../lib/key-pinning';
+import { isAdminUser } from '../../lib/admin';
 import { useCopy } from '../../lib/use-copy';
 
 export default function TopBar() {
   const { activeContact, setActiveContact } = useChatStore();
-  const { publicKey } = useAuthStore();
-  const { setShowSecuritySettings } = useUIStore();
-  const { chat, sidebar, keyVerify } = useCopy();
+  const { user, publicKey } = useAuthStore();
+  const { setShowAdminStats } = useUIStore();
+  const { chat, keyVerify, admin } = useCopy();
   const [verifyFps, setVerifyFps] = useState<{ mine: string; theirs: string } | null>(null);
 
   const openVerify = async () => {
@@ -71,13 +72,15 @@ export default function TopBar() {
             <Fingerprint className="h-5 w-5" />
           </button>
         )}
-        <button
-          onClick={() => setShowSecuritySettings(true)}
-          className="btn-ghost-icon"
-          title={sidebar.securityTooltip}
-        >
-          <Settings2 className="h-5 w-5" />
-        </button>
+        {isAdminUser(user) && (
+          <button
+            onClick={() => setShowAdminStats(true)}
+            className="btn-ghost-icon"
+            title={admin.tooltip}
+          >
+            <BarChart3 className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       {verifyFps && activeContact && (
