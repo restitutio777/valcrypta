@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Settings2, X, Fingerprint, BarChart3 } from 'lucide-react';
+import { ArrowLeft, X, Fingerprint, BarChart3 } from 'lucide-react';
 import ValCryptaLogo from '../ValCryptaLogo';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
@@ -11,8 +11,8 @@ import { useCopy } from '../../lib/use-copy';
 export default function TopBar() {
   const { activeContact, setActiveContact } = useChatStore();
   const { user, publicKey } = useAuthStore();
-  const { setShowSecuritySettings, setShowAdminStats } = useUIStore();
-  const { chat, sidebar, keyVerify, admin } = useCopy();
+  const { setShowAdminStats } = useUIStore();
+  const { chat, keyVerify, admin } = useCopy();
   const [verifyFps, setVerifyFps] = useState<{ mine: string; theirs: string } | null>(null);
 
   const openVerify = async () => {
@@ -81,13 +81,6 @@ export default function TopBar() {
             <BarChart3 className="h-5 w-5" />
           </button>
         )}
-        <button
-          onClick={() => setShowSecuritySettings(true)}
-          className="btn-ghost-icon"
-          title={sidebar.securityTooltip}
-        >
-          <Settings2 className="h-5 w-5" />
-        </button>
       </div>
 
       {verifyFps && activeContact && (
