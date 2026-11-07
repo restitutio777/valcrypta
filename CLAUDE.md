@@ -36,6 +36,6 @@ Der Betreiber arbeitet in diesem und anderen Projekten mal lokal, mal als Cloud-
 
 ## Marke / Logo
 - Logo = Eulen-Stich "Perched owl" (Baltimore 1832) von font-revival.com, MIT, (c) 2026 Harold Lehmann. Quelle: [public/owl.svg](public/owl.svg) (einfarbig, `<metadata>` mit Copyright drinlassen). Credit steht im Landing-Footer (`landing.credits` in den Locales).
-- Daraus generiert: `public/favicon.svg` (zugleich Logo-Bild in [ValCryptaLogo.tsx](src/components/ValCryptaLogo.tsx)) und alle PWA-PNGs: `npm i --no-save sharp && node scripts/generate-icons.mjs`. Farben: Messing-Verlauf `#ECD7A6 -> #B8924A` auf Tinte `#0B0F19..#222B40`.
-- Hero-Wasserzeichen: `.owl-watermark` in [src/index.css](src/index.css) nutzt `owl.svg` als CSS-Maske (Deckkraft 5,5 % hell / 5 % dunkel).
+- Daraus generiert: `public/favicon.svg` (rund, zugleich Logo-Bild in [ValCryptaLogo.tsx](src/components/ValCryptaLogo.tsx)) und alle PWA-PNGs: `npm i --no-save sharp && node scripts/generate-icons.mjs`. Farben: Messing-Verlauf `#ECD7A6 -> #B8924A` auf Tinte `#0B0F19..#222B40`.
+- Hero-Wasserzeichen: `.owl-watermark` in [src/index.css](src/index.css) nutzt `owl.svg` als CSS-Maske mit Verlauf Messing -> Dämmerblau (Deckkraft 11 % hell / 8,5 % dunkel), Kopf oben, Ast blendet nach unten aus. Kleine Eule als Ornament im Footer: `.owl-mark`.
 - Icon-Wechsel: Query `?v=N` in `index.html`, `manifest.webmanifest`, `ValCryptaLogo.tsx` hochzählen und `CACHE` in `public/sw.js` bumpen, sonst liefert der Cache-first-Service-Worker die alten Icons weiter.
