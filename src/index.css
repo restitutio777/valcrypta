@@ -112,6 +112,33 @@
     background: linear-gradient(to top, rgba(12, 16, 27, 0.95) 0%, rgba(12, 16, 27, 0) 100%);
   }
 
+  /* Brand owl shimmering through the haze. The engraving is used as an
+     alpha mask so its tint follows the theme; opacity stays low enough that
+     the headline keeps full contrast. Sits under the ground fog, so it
+     dissolves toward the horizon instead of ending in a hard edge. */
+  .owl-watermark {
+    position: absolute;
+    inset: 4% -10% 0 -10%;
+    z-index: -1;
+    pointer-events: none;
+    background: #3a4560;
+    opacity: 0.055;
+    -webkit-mask: url('/owl.svg') 54% 62% / auto 86% no-repeat;
+    mask: url('/owl.svg') 54% 62% / auto 86% no-repeat;
+  }
+  .dark .owl-watermark {
+    background: #d9bc85;
+    opacity: 0.05;
+  }
+  @media (max-width: 640px) {
+    .owl-watermark {
+      -webkit-mask-size: auto 62%;
+      mask-size: auto 62%;
+      -webkit-mask-position: 62% 72%;
+      mask-position: 62% 72%;
+    }
+  }
+
   /* Slow drifting tonal washes inside the haze (mounted as divs so the
      hero can layer several). */
   .haze-wash {

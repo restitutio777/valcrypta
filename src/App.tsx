@@ -43,6 +43,12 @@ function App() {
     document.documentElement.lang = language;
   }, [language]);
 
+  // Landing, login and signup share one document; without this a switch
+  // keeps the old scroll offset and e.g. the final CTA opens signup mid-page.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [authView]);
+
   const checkAuth = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();

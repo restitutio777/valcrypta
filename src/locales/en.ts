@@ -106,6 +106,11 @@ const en: Copy = {
       linkText: 'Source code on request',
       url: 'mailto:pgj@mailbox.org?subject=ValCrypta%20-%20Source%20code',
     },
+    credits: {
+      label: 'Owl engraving: Baltimore 1832, restored by',
+      linkText: 'Font Revival (MIT)',
+      url: 'https://font-revival.com/icons/baltimore-1832-p123-34.html',
+    },
   },
 
   common: {
