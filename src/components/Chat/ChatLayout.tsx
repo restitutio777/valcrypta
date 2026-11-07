@@ -33,7 +33,7 @@ export default function ChatLayout() {
       <div
         className={`${
           activeContact ? 'flex' : 'hidden lg:flex'
-        } min-w-0 flex-1 flex-col`}
+        } relative min-w-0 flex-1 flex-col`}
       >
         <TopBar />
         <ChatArea />

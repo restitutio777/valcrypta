@@ -247,7 +247,7 @@ const fr: Copy = {
     emptyBadge: 'Tous les messages sont chiffrés de bout en bout',
     noMessages: 'Pas encore de message. Écris le premier.',
     loadingMessages: 'Chargement des messages …',
-    inputPlaceholder: 'Écrire un message chiffré …',
+    inputPlaceholder: 'Écrire un message …',
     send: 'Envoyer',
     attach: 'Joindre un fichier',
     deleteConfirm: 'Supprimer pour les deux ?',
@@ -300,7 +300,8 @@ const fr: Copy = {
   },
 
   sidebar: {
-    searchPlaceholder: "Trouver des personnes par nom d'utilisateur …",
+    searchPlaceholder: 'Chercher un pseudo …',
+    chatsLabel: 'Discussions',
     noUsers: 'Aucun utilisateur trouvé',
     alreadyContact: 'Déjà connecté — touche pour ouvrir',
     tapToChat: 'Touche pour écrire',

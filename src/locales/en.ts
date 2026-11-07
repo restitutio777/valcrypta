@@ -246,7 +246,7 @@ const en: Copy = {
     emptyBadge: 'All messages are end-to-end encrypted',
     noMessages: 'No messages yet. Write the first one.',
     loadingMessages: 'Loading messages …',
-    inputPlaceholder: 'Write an encrypted message …',
+    inputPlaceholder: 'Write a message …',
     send: 'Send',
     attach: 'Attach file',
     deleteConfirm: 'Delete for both?',
@@ -299,7 +299,8 @@ const en: Copy = {
   },
 
   sidebar: {
-    searchPlaceholder: 'Find people by username …',
+    searchPlaceholder: 'Search username …',
+    chatsLabel: 'Chats',
     noUsers: 'No users found',
     alreadyContact: 'Already connected — tap to open',
     tapToChat: 'Tap to start writing',

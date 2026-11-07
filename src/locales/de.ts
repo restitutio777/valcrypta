@@ -255,7 +255,7 @@ const chat = {
   emptyBadge: 'Alle Nachrichten sind Ende-zu-Ende verschlüsselt',
   noMessages: 'Noch keine Nachrichten. Schreib die erste.',
   loadingMessages: 'Nachrichten werden geladen …',
-  inputPlaceholder: 'Verschlüsselte Nachricht schreiben …',
+  inputPlaceholder: 'Nachricht schreiben …',
   send: 'Senden',
   attach: 'Datei anhängen',
   deleteConfirm: 'Für beide löschen?',
@@ -308,7 +308,8 @@ const pwa = {
 };
 
 const sidebar = {
-  searchPlaceholder: 'Personen per Nutzername finden …',
+  searchPlaceholder: 'Nutzername suchen …',
+  chatsLabel: 'Chats',
   noUsers: 'Keine Nutzer gefunden',
   alreadyContact: 'Bereits verbunden — tippen zum Öffnen',
   tapToChat: 'Tippen, um zu schreiben',
