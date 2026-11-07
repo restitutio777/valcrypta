@@ -112,30 +112,65 @@
     background: linear-gradient(to top, rgba(12, 16, 27, 0.95) 0%, rgba(12, 16, 27, 0) 100%);
   }
 
-  /* Brand owl shimmering through the haze. The engraving is used as an
-     alpha mask so its tint follows the theme; opacity stays low enough that
-     the headline keeps full contrast. Sits under the ground fog, so it
-     dissolves toward the horizon instead of ending in a hard edge. */
+  /* Brand owl shimmering through the haze. The engraving is an alpha mask,
+     intersected with a vertical fade so the branch dissolves into the fog
+     while head and eyes stay crisp up top, framing the headline. The fill is
+     a brass-to-dusk gradient like the headline accent. Text contrast stays
+     AA: at this opacity the owl shifts the backdrop by only a few percent. */
   .owl-watermark {
     position: absolute;
-    inset: 4% -10% 0 -10%;
+    left: 50%;
+    top: 0;
+    height: min(92%, 62rem);
+    aspect-ratio: 1817 / 1320;
+    transform: translateX(-47%);
     z-index: -1;
     pointer-events: none;
-    background: #3a4560;
-    opacity: 0.055;
-    -webkit-mask: url('/owl.svg') 54% 62% / auto 86% no-repeat;
-    mask: url('/owl.svg') 54% 62% / auto 86% no-repeat;
+    background: linear-gradient(180deg, #8f6e33 0%, #6f6a5e 38%, #4d5a76 75%);
+    opacity: 0.11;
+    -webkit-mask:
+      url('/owl.svg') center / contain no-repeat,
+      linear-gradient(180deg, #000 0%, #000 52%, transparent 96%);
+    -webkit-mask-composite: source-in;
+    mask:
+      url('/owl.svg') center / contain no-repeat,
+      linear-gradient(180deg, #000 0%, #000 52%, transparent 96%);
+    mask-composite: intersect;
+    animation: owl-reveal 2.4s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
   .dark .owl-watermark {
-    background: #d9bc85;
-    opacity: 0.05;
+    background: linear-gradient(180deg, #ecd7a6 0%, #c9a866 45%, #7d8aa6 85%);
+    opacity: 0.085;
+  }
+  /* Small owl as a printer's ornament (footer divider). Same mask, solid
+     brass so it reads at icon size. */
+  .owl-mark {
+    display: block;
+    aspect-ratio: 1817 / 1320;
+    background: linear-gradient(180deg, #b08a45 0%, #8f6e33 100%);
+    -webkit-mask: url('/owl.svg') center / contain no-repeat;
+    mask: url('/owl.svg') center / contain no-repeat;
+  }
+  .dark .owl-mark {
+    background: linear-gradient(180deg, #ecd7a6 0%, #c9a866 100%);
+  }
+  @keyframes owl-reveal {
+    from {
+      opacity: 0;
+      translate: 0 1.5rem;
+    }
   }
   @media (max-width: 640px) {
     .owl-watermark {
-      -webkit-mask-size: auto 62%;
-      mask-size: auto 62%;
-      -webkit-mask-position: 62% 72%;
-      mask-position: 62% 72%;
+      top: 4.5rem;
+      height: auto;
+      width: 175%;
+      transform: translateX(-52%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .owl-watermark {
+      animation: none;
     }
   }
 

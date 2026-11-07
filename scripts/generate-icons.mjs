@@ -46,8 +46,9 @@ const tile = ({ side, rx = 0, cx, cy }) => `<svg xmlns="http://www.w3.org/2000/s
 // Messing-Verlauf läuft über das ganze Motiv: oben hell, unten satt. y1/y2 sind
 // vertauscht, weil der Pfad der Quelle mit scale(1,-1) gespiegelt ist.
 const full = tile({ side: 1780 });        // Kachel ohne Rundung (App-Icons; iOS/Android runden selbst)
-// Favicon (auch Logo-Komponente in der App): enger auf die Eule, damit Kopf und Augen bei 16 bis 32 px lesbar bleiben.
-const favicon = tile({ side: 1480, rx: 112, cx: 1250, cy: -930 });
+// Favicon (auch Logo-Komponente in der App): rund, enger auf die Eule, damit Kopf
+// und Augen bei 16 bis 32 px lesbar bleiben.
+const favicon = tile({ side: 1700, rx: 256, cx: 1165, cy: -925 });
 const maskable = tile({ side: 2050 });    // Eule bleibt in der 80-%-Safe-Zone
 
 writeFileSync('public/favicon.svg', favicon);

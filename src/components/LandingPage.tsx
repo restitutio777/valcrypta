@@ -104,7 +104,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
         <div className="relative z-10">
           <nav className="container mx-auto px-6 py-5">
             <div className="flex items-center justify-between">
-              <ValCryptaLogo size="sm" shape="circle" showText={true} />
+              <ValCryptaLogo size="sm" showText={true} />
               <button onClick={onSignIn} className="btn-glass px-5 py-2 text-sm">
                 {landing.ctaSecondary}
               </button>
@@ -128,7 +128,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
               </h1>
 
               <p
-                className="mx-auto mt-7 max-w-xl animate-fade-in-up text-lg leading-relaxed text-porcelain-600 dark:text-porcelain-300 md:text-xl"
+                className="mx-auto mt-7 max-w-xl animate-fade-in-up text-lg leading-relaxed text-porcelain-700 dark:text-porcelain-300 md:text-xl"
                 style={{ animationDelay: '100ms' }}
               >
                 {landing.heroSub}
@@ -408,6 +408,12 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
       {/* ---------------------------------------------------------------- */}
       <footer className="hairline border-t">
         <div className="container mx-auto flex flex-col items-center gap-4 px-6 py-10">
+          {/* Printer's ornament: hairline, owl, hairline */}
+          <div aria-hidden className="mb-2 flex w-full max-w-xs items-center gap-4">
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-brass-400/50" />
+            <span className="owl-mark w-12" />
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-brass-400/50" />
+          </div>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
             {landing.specs.map((s) => (
               <span key={s} className="spec-label !text-[10px]">

@@ -4,8 +4,9 @@
 E2E-verschlüsselter Messenger (React/Vite SPA, Supabase), öffentlich unter AGPL-3.0, `main` deployt automatisch auf Vercel. Code-Map in `CLAUDE.md`.
 
 ## Aktueller Stand (2026-11-07)
-- Neues Logo: Eulen-Stich (font-revival, MIT) als Favicon, PWA-Icon, In-App-Logo und schwach durchschimmerndes Hero-Wasserzeichen. Details und Regeneration: `CLAUDE.md` Abschnitt "Marke / Logo".
+- Neues Logo: Eulen-Stich (font-revival, MIT) als rundes Favicon/In-App-Logo, PWA-Icon (quadratisch, OS maskiert), Hero-Wasserzeichen und Footer-Ornament. Details und Regeneration: `CLAUDE.md` Abschnitt "Marke / Logo".
 - Scroll-Reset beim Wechsel Landing/Login/Signup in `App.tsx`.
+- Hero-Untertitel hell auf `porcelain-700` (vorher 600, Kontrast lag unter AA, mit Eule ~3,5:1; jetzt ~5,4:1).
 
 ## Entscheidungen
 - Logo-Komponente zeigt `/favicon.svg` als `<img>` (eine Quelle für Tab und App), statt das 23-KB-Pfad-SVG ins JS-Bundle zu ziehen.
