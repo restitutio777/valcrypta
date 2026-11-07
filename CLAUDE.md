@@ -33,3 +33,9 @@ Der Betreiber arbeitet in diesem und anderen Projekten mal lokal, mal als Cloud-
 - Am Session-Start `git pull` — auf dem neuesten Stand beginnen.
 - Am Ende jeder Arbeitsphase / vor Sessionende alles committen und pushen. Nichts Wichtiges nur uncommitted lokal liegen lassen.
 - Cloud-Sessions sehen NUR den Git-Stand: keine uncommitteten Änderungen, NICHT das lokale Auto-Memory unter `~/.claude/`. Was die andere Seite wissen muss, gehört committet in versionierte Dateien (CLAUDE.md, ggf. `memory/`, Docs, Code).
+
+## Marke / Logo
+- Logo = Eulen-Stich "Perched owl" (Baltimore 1832) von font-revival.com, MIT, (c) 2026 Harold Lehmann. Quelle: [public/owl.svg](public/owl.svg) (einfarbig, `<metadata>` mit Copyright drinlassen). Credit steht im Landing-Footer (`landing.credits` in den Locales).
+- Daraus generiert: `public/favicon.svg` (zugleich Logo-Bild in [ValCryptaLogo.tsx](src/components/ValCryptaLogo.tsx)) und alle PWA-PNGs: `npm i --no-save sharp && node scripts/generate-icons.mjs`. Farben: Messing-Verlauf `#ECD7A6 -> #B8924A` auf Tinte `#0B0F19..#222B40`.
+- Hero-Wasserzeichen: `.owl-watermark` in [src/index.css](src/index.css) nutzt `owl.svg` als CSS-Maske (Deckkraft 5,5 % hell / 5 % dunkel).
+- Icon-Wechsel: Query `?v=N` in `index.html`, `manifest.webmanifest`, `ValCryptaLogo.tsx` hochzählen und `CACHE` in `public/sw.js` bumpen, sonst liefert der Cache-first-Service-Worker die alten Icons weiter.

@@ -1,16 +1,16 @@
 interface ValCryptaLogoProps {
   size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
-  // 'square' matches the PWA/home-screen icon geometry (default). 'circle'
+  // 'square' matches the favicon / home-screen tile (default). 'circle'
   // renders the same mark on a round tile — used in the top nav.
   shape?: 'square' | 'circle';
 }
 
-// Brand mark: chiseled brass "V" (thick left stroke, thin right — a calligraphic
-// high-contrast cut) on a deep-ink tile. In 'square' shape the geometry is
-// identical to the PWA icons in /public, so tab, home screen and top nav can
-// all show the same mark. The tile is dark in both themes; a faint porcelain
-// ring keeps it from sinking into dark-mode surfaces.
+// Brand mark: brass owl engraving (Baltimore 1832, via Font Revival, MIT) on a
+// deep-ink tile. The image is /favicon.svg itself, so tab, home screen and
+// in-app logo always show the same mark; it is generated from public/owl.svg
+// by scripts/generate-icons.mjs. The tile is dark in both themes; a faint
+// porcelain ring keeps it from sinking into dark-mode surfaces.
 export default function ValCryptaLogo({ size = 'md', showText = true, shape = 'square' }: ValCryptaLogoProps) {
   const sizes = {
     sm: { box: 'w-8 h-8', text: 'text-base' },
@@ -19,37 +19,19 @@ export default function ValCryptaLogo({ size = 'md', showText = true, shape = 's
   };
 
   const { box, text } = sizes[size];
-  // Half of the 512 viewport makes the rounded rect a full circle.
-  const tileRadius = shape === 'circle' ? 256 : 116;
-  const ringRadius = shape === 'circle' ? 250 : 110;
+  // 112/512 matches the rx of the rounded tile in favicon.svg.
+  const radius = shape === 'circle' ? 'rounded-full' : 'rounded-[21.875%]';
 
   return (
     <div className="flex items-center gap-2">
-      <svg className={box} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="vc-brass" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#DCC08B" />
-            <stop offset="0.55" stopColor="#C8A25D" />
-            <stop offset="1" stopColor="#A9843F" />
-          </linearGradient>
-          <linearGradient id="vc-ink" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#1B2233" />
-            <stop offset="1" stopColor="#0D111C" />
-          </linearGradient>
-        </defs>
-        <rect width="512" height="512" rx={tileRadius} fill="url(#vc-ink)" />
-        <rect
-          x="6"
-          y="6"
-          width="500"
-          height="500"
-          rx={ringRadius}
-          fill="none"
-          strokeWidth="12"
-          className="stroke-transparent dark:stroke-porcelain-100/15"
-        />
-        <path d="M141 136L211 136L275 279.4L339 136L373 136L257 396Z" fill="url(#vc-brass)" />
-      </svg>
+      <img
+        src="/favicon.svg?v=2"
+        alt={showText ? '' : 'ValCrypta'}
+        width={64}
+        height={64}
+        draggable={false}
+        className={`${box} ${radius} flex-shrink-0 select-none dark:ring-1 dark:ring-porcelain-100/15`}
+      />
       {showText && (
         <h2 className={`${text} font-semibold tracking-tight text-ink-900 dark:text-porcelain-100`}>
           ValCrypta

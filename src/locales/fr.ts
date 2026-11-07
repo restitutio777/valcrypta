@@ -107,6 +107,11 @@ const fr: Copy = {
       linkText: 'Code source sur demande',
       url: 'mailto:pgj@mailbox.org?subject=ValCrypta%20-%20Code%20source',
     },
+    credits: {
+      label: 'Gravure de la chouette : Baltimore 1832, restaurée par',
+      linkText: 'Font Revival (MIT)',
+      url: 'https://font-revival.com/icons/baltimore-1832-p123-34.html',
+    },
   },
 
   common: {

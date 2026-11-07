@@ -98,6 +98,7 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           className="haze-wash animate-float-slow left-1/2 top-56 h-[22rem] w-[22rem] -translate-x-1/2 bg-brass-300/20 dark:bg-brass-500/10"
           style={{ animationDuration: '26s' }}
         />
+        <div aria-hidden className="owl-watermark" />
         <MistHills />
 
         <div className="relative z-10">
@@ -423,6 +424,17 @@ export default function LandingPage({ onGetStarted, onSignIn }: LandingPageProps
           >
             {landing.openSource.label} · {landing.openSource.linkText}
           </a>
+          <p className="text-xs text-porcelain-500 dark:text-porcelain-400">
+            {landing.credits.label}{' '}
+            <a
+              href={landing.credits.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-brass-400/50 underline-offset-4 transition-colors hover:text-brass-500 dark:hover:text-brass-300"
+            >
+              {landing.credits.linkText}
+            </a>
+          </p>
           <LanguageSwitcher />
         </div>
       </footer>

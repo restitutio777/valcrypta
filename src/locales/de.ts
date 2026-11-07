@@ -114,6 +114,11 @@ const landing = {
     linkText: 'Quellcode auf Anfrage',
     url: 'mailto:pgj@mailbox.org?subject=ValCrypta%20-%20Quellcode',
   },
+  credits: {
+    label: 'Eulen-Stich: Baltimore 1832, restauriert von',
+    linkText: 'Font Revival (MIT)',
+    url: 'https://font-revival.com/icons/baltimore-1832-p123-34.html',
+  },
 };
 
 const common = {
