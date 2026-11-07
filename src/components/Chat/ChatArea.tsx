@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Lock, MessageSquare, ShieldCheck, ShieldAlert, Paperclip, Trash2 } from 'lucide-react';
+import { Send, Lock, ShieldCheck, ShieldAlert, Paperclip, Trash2 } from 'lucide-react';
 import { supabase, Database } from '../../lib/supabase';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
@@ -294,17 +294,16 @@ export default function ChatArea() {
 
   if (!activeContact) {
     return (
-      <div className="aurora-bg flex flex-1 items-center justify-center bg-warm-50 dark:bg-ink-950">
-        <div className="animate-fade-in-up px-6 text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-porcelain-200 dark:bg-ink-800">
-            <MessageSquare className="h-10 w-10 text-porcelain-600 dark:text-porcelain-300" />
-          </div>
-          <h3 className="mb-2 text-2xl font-semibold text-warm-800 dark:text-warm-50">
+      <div className="aurora-bg flex flex-1 items-center justify-center bg-porcelain-50 dark:bg-ink-950">
+        <div className="flex animate-fade-in flex-col items-center px-6 text-center">
+          <span className="owl-mark mb-8 w-44 opacity-70 dark:opacity-60" aria-hidden="true" />
+          <h3 className="mb-2 text-2xl font-semibold tracking-tight text-ink-900 dark:text-porcelain-50">
             {chat.emptyTitle}
           </h3>
-          <p className="mb-1 text-warm-600 dark:text-warm-300">{chat.emptySub}</p>
-          <p className="inline-flex items-center gap-1.5 text-sm text-warm-500 dark:text-warm-400">
-            <ShieldCheck className="h-4 w-4 text-primary" />
+          <p className="text-porcelain-700 dark:text-porcelain-300">{chat.emptySub}</p>
+          <div className="my-6 h-px w-16 bg-porcelain-300 dark:bg-ink-600" />
+          <p className="inline-flex items-center gap-1.5 text-sm text-porcelain-600 dark:text-porcelain-400">
+            <ShieldCheck className="h-4 w-4 flex-shrink-0 text-brass-500 dark:text-brass-400" />
             {chat.emptyBadge}
           </p>
         </div>
@@ -324,11 +323,9 @@ export default function ChatArea() {
           </div>
         ) : messages.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <div className="animate-fade-in text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-sage-100 dark:bg-ink-700">
-                <Lock className="h-8 w-8 text-primary/70" />
-              </div>
-              <p className="text-sm text-warm-600 dark:text-warm-300">{chat.noMessages}</p>
+            <div className="flex animate-fade-in flex-col items-center text-center">
+              <span className="owl-mark mb-5 w-24 opacity-40" aria-hidden="true" />
+              <p className="text-sm text-porcelain-600 dark:text-porcelain-300">{chat.noMessages}</p>
             </div>
           </div>
         ) : (

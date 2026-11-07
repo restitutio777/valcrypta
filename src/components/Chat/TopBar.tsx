@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { ArrowLeft, X, Fingerprint, BarChart3 } from 'lucide-react';
-import ValCryptaLogo from '../ValCryptaLogo';
+import { ArrowLeft, X, Fingerprint, BarChart3, ShieldCheck } from 'lucide-react';
+import Avatar from './Avatar';
 import { useChatStore } from '../../stores/chat-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useUIStore } from '../../stores/ui-store';
@@ -28,64 +28,72 @@ export default function TopBar() {
     }
   };
 
-  return (
-    <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-sage-100 dark:border-ink-700/60 bg-white/70 dark:bg-ink-900/80 px-2 backdrop-blur-xl sm:px-4 pt-[env(safe-area-inset-top)]">
-      <div className="flex min-w-0 items-center gap-1 sm:gap-2">
-        {activeContact && (
-          <button
-            onClick={() => setActiveContact(null)}
-            className="btn-ghost-icon lg:hidden"
-            title={chat.backToChats}
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </button>
-        )}
+  // Without an open chat the sidebar already carries the brand; the bar
+  // collapses to a floating slot for the admin entry so the empty state
+  // gets the whole pane.
+  if (!activeContact) {
+    return isAdminUser(user) ? (
+      <div className="absolute right-4 top-[max(0.75rem,env(safe-area-inset-top))] z-10">
+        <button
+          onClick={() => setShowAdminStats(true)}
+          className="btn-ghost-icon"
+          title={admin.tooltip}
+          aria-label={admin.tooltip}
+        >
+          <BarChart3 className="h-5 w-5" />
+        </button>
+      </div>
+    ) : null;
+  }
 
-        {activeContact ? (
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="avatar-disc h-10 w-10 flex-shrink-0 text-sm">
-              {activeContact.username[0].toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <h2 className="truncate font-semibold leading-tight text-warm-800 dark:text-warm-50">
-                {activeContact.username}
-              </h2>
-              <p className="flex items-center gap-1.5 text-xs font-medium text-porcelain-600 dark:text-porcelain-300">
-                <span className="relative flex h-2 w-2 flex-shrink-0">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-50" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-                </span>
-                {chat.e2eBadge}
-              </p>
-            </div>
+  return (
+    <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-porcelain-200/80 bg-porcelain-50/85 px-2 pt-[env(safe-area-inset-top)] backdrop-blur-xl dark:border-ink-700/60 dark:bg-ink-950/85 sm:px-4">
+      <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+        <button
+          onClick={() => setActiveContact(null)}
+          className="btn-ghost-icon lg:hidden"
+          title={chat.backToChats}
+          aria-label={chat.backToChats}
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </button>
+
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={activeContact.username} size="md" />
+          <div className="min-w-0">
+            <h2 className="truncate font-semibold leading-tight text-ink-900 dark:text-porcelain-50">
+              {activeContact.username}
+            </h2>
+            <p className="flex items-center gap-1 text-xs text-porcelain-600 dark:text-porcelain-400">
+              <ShieldCheck className="h-3.5 w-3.5 flex-shrink-0 text-brass-500 dark:text-brass-400" />
+              {chat.e2eBadge}
+            </p>
           </div>
-        ) : (
-          // Desktop shows the sidebar logo next to this bar; repeat it only
-          // where the sidebar is hidden.
-          <div className="px-2 lg:hidden">
-            <ValCryptaLogo size="sm" showText={true} />
-          </div>
-        )}
+        </div>
       </div>
 
       <div className="flex items-center gap-1">
-        {activeContact && (
-          <button onClick={openVerify} className="btn-ghost-icon" title={keyVerify.verifyTooltip}>
-            <Fingerprint className="h-5 w-5" />
-          </button>
-        )}
+        <button
+          onClick={openVerify}
+          className="btn-ghost-icon"
+          title={keyVerify.verifyTooltip}
+          aria-label={keyVerify.verifyTooltip}
+        >
+          <Fingerprint className="h-5 w-5" />
+        </button>
         {isAdminUser(user) && (
           <button
             onClick={() => setShowAdminStats(true)}
             className="btn-ghost-icon"
             title={admin.tooltip}
+            aria-label={admin.tooltip}
           >
             <BarChart3 className="h-5 w-5" />
           </button>
         )}
       </div>
 
-      {verifyFps && activeContact && (
+      {verifyFps && (
         <div
           className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-ink-950/60 p-4 backdrop-blur-sm"
           onClick={() => setVerifyFps(null)}
