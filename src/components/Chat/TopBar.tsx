@@ -60,7 +60,9 @@ export default function TopBar() {
             </div>
           </div>
         ) : (
-          <div className="px-2">
+          // Desktop shows the sidebar logo next to this bar; repeat it only
+          // where the sidebar is hidden.
+          <div className="px-2 lg:hidden">
             <ValCryptaLogo size="sm" showText={true} />
           </div>
         )}
